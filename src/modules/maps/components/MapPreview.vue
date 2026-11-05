@@ -39,13 +39,13 @@ function renderBoundary(): void {
           feature?.geometry.type === 'Polygon' || feature?.geometry.type === 'MultiPolygon'
             ? 'region-polygon'
             : '',
-        color: '#2563eb',
+        color: '#A78A48',
         weight: 3,
-        fillColor: '#3b82f6',
-        fillOpacity: 0.18,
+        fillColor: '#A78A48',
+        fillOpacity: 0.2,
       }),
       pointToLayer: (_feature, latlng) =>
-        L.circleMarker(latlng, { radius: 7, color: '#2563eb', fillOpacity: 0.7 }),
+        L.circleMarker(latlng, { radius: 7, color: '#1D2532', fillColor: '#A78A48', fillOpacity: 0.85 }),
       onEachFeature(feature, layer) {
         const label = document.createElement('span')
         label.textContent =
@@ -66,7 +66,7 @@ function renderBoundary(): void {
 
 onMounted(() => {
   if (!container.value) return
-  map = L.map(container.value, { scrollWheelZoom: false }).setView([-16.5, -68.15], 9)
+  map = L.map(container.value, { scrollWheelZoom: true }).setView([-16.5, -68.15], 9)
   const tiles = L.tileLayer(
     import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     {
@@ -121,7 +121,7 @@ onBeforeUnmount(() => {
     <div
       class="flex flex-wrap items-center gap-2 border-t border-input px-4 py-3 text-xs text-secondary-foreground"
     >
-      <span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-600" aria-hidden="true" />
+      <span class="inline-block h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true" />
       {{ mapLabel }}
       <span class="ms-auto">Arrastra para moverte · Usa + y − para acercar o alejar</span>
     </div>

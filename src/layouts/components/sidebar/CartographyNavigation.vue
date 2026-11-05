@@ -31,14 +31,14 @@ watch(
     <button
       type="button"
       class="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-      :class="active ? 'bg-secondary text-mono' : 'text-foreground'"
+      :class="active ? 'bg-secondary text-foreground' : 'text-foreground'"
       :aria-expanded="expanded"
       aria-controls="cartography-submenu"
       @click="expanded = !expanded"
     >
       <i
         class="ki-filled ki-map text-lg"
-        :class="active ? 'text-blue-400' : 'text-muted-foreground'"
+        :class="active ? 'text-cobre' : 'text-muted-foreground'"
         aria-hidden="true"
       />
       <span class="grow">Cartografía</span>
@@ -64,8 +64,8 @@ watch(
         class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         :class="
           route.name === entry.name
-            ? 'bg-blue-500/15 font-medium text-blue-300'
-            : 'text-zinc-400 hover:bg-secondary hover:text-foreground'
+            ? 'bg-primary/20 font-medium text-cobre'
+            : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
         "
       >
         <i class="ki-filled text-base" :class="entry.icon" aria-hidden="true" />

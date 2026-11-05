@@ -43,13 +43,13 @@ const summaryCards = [
 ]
 
 const regions = [
-  { name: 'Altiplano Sur', municipalities: 22, color: 'bg-primary' },
-  { name: 'Altiplano Norte', municipalities: 19, color: 'bg-success' },
-  { name: 'Valles Interandinos Norte', municipalities: 11, color: 'bg-info' },
-  { name: 'Valles Interandinos Sur', municipalities: 11, color: 'bg-warning' },
-  { name: 'Amazónica', municipalities: 9, color: 'bg-violet-500' },
-  { name: 'Metropolitana', municipalities: 8, color: 'bg-cyan-500' },
-  { name: 'Yungas', municipalities: 7, color: 'bg-orange-500' },
+  { name: 'Altiplano Sur', municipalities: 22, color: 'bg-[#A78A48]' },
+  { name: 'Altiplano Norte', municipalities: 19, color: 'bg-[#24334A]' },
+  { name: 'Valles Interandinos Norte', municipalities: 11, color: 'bg-[#C29B38]' },
+  { name: 'Valles Interandinos Sur', municipalities: 11, color: 'bg-[#B25E35]' },
+  { name: 'Amazónica', municipalities: 9, color: 'bg-[#3D7847]' },
+  { name: 'Metropolitana', municipalities: 8, color: 'bg-[#2D5D88]' },
+  { name: 'Yungas', municipalities: 7, color: 'bg-[#899251]' },
 ]
 
 const totalMunicipalities = computed(() =>
@@ -121,10 +121,10 @@ const modules = [
           <div class="max-w-3xl">
             <div class="mb-3 flex items-center gap-2 text-sm font-semibold text-primary">
               <span class="size-2 rounded-full bg-primary"></span>
-              Sistema de Administración SEDALP
+              Gobierno Autónomo Departamental de La Paz
             </div>
             <h2 class="mb-2 text-2xl font-semibold text-mono lg:text-3xl">
-              Bienvenido al panel de gestión
+              Bienvenido al panel SEDALP
             </h2>
             <p class="max-w-2xl text-sm leading-6 text-secondary-foreground lg:text-base">
               Consulta el estado general del sistema, administra el personal y supervisa la

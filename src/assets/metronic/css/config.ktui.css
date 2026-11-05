@@ -1,51 +1,86 @@
-/** Colors - https://tailwindcss.com/docs/colors **/
+/**
+ * Sistema de Diseño Oficial - Gobierno Autónomo Departamental de La Paz
+ * Adaptado a Metronic 9 y Tailwind CSS v4 para admin-sedalp
+ **/
+
 :root {
-  --background: var(--color-white);
-  --foreground: var(--color-zinc-950);
-  --card: var(--color-white);
-  --card-foreground: var(--color-zinc-950);
-  --popover: var(--color-white);
-  --popover-foreground: var(--color-zinc-950);
-  --primary: var(--color-blue-500);
-  --primary-foreground: var(--color-white);
-  --secondary: var(--color-zinc-100);
-  --secondary-foreground: var(--color-zinc-900);
-  --muted: var(--color-zinc-100);
-  --muted-foreground: var(--color-zinc-500);
-  --accent: var(--color-zinc-100);
-  --accent-foreground: var(--color-zinc-900);
-  --destructive: var(--color-red-600);
-  --destructive-foreground: var(--color-white);
-  --mono: var(--color-zinc-950);
-  --mono-foreground: var(--color-white);
-  --border: oklch(94% 0.004 286.32); /* between --color-zinc-100 and --color-zinc-200 */
-  --input: var(--color-zinc-200);
-  --ring: var(--color-zinc-400);
+  /* Fondos y Superficies (60-70% campo de respiración) */
+  --background: #F8F7F3;
+  --foreground: #1D2532;
+  --card: #FFFFFF;
+  --card-foreground: #1D2532;
+  --popover: #FFFFFF;
+  --popover-foreground: #1D2532;
+
+  /* Identidad Oficial: Cobre Principal (5-10% acento focal) */
+  --primary: #A78A48;
+  --primary-foreground: #FFFFFF;
+
+  /* Superficies secundarias y acentos neutros */
+  --secondary: #F2F0E6;
+  --secondary-foreground: #1D2532;
+  --muted: #EFECE2;
+  --muted-foreground: #6F737A;
+  --accent: #EAE6D8;
+  --accent-foreground: #1D2532;
+
+  /* Alertas y estados funcionales */
+  --destructive: #D32F2F;
+  --destructive-foreground: #FFFFFF;
+
+  /* Monocromo y estructura */
+  --mono: #1D2532;
+  --mono-foreground: #FFFFFF;
+  --border: #E5E0D2;
+  --input: #D9D3C3;
+  --ring: #A78A48;
   --radius: 0.5rem;
+
+  /* Colores canónicos institucionales */
+  --cobre: #A78A48;
+  --azul-negro: #1D2532;
+  --gris-funcional: #6F737A;
+  --gris-claro: #9B9B9B;
+  --crema: #F2F0E6;
+  --verde-territorial: #899251;
 }
 
 .dark {
-  --background: var(--color-zinc-950);
-  --foreground: var(--color-zinc-50);
-  --card: var(--color-zinc-950);
-  --card-foreground: var(--color-zinc-50);
-  --popover: var(--color-zinc-950);
-  --popover-foreground: var(--color-zinc-50);
-  --primary: var(--color-blue-600);
-  --primary-foreground: var(--color-white);
-  --secondary: var(--color-zinc-800);
-  --secondary-foreground: var(--color-zinc-50);
-  --muted: var(--color-zinc-900);
-  --muted-foreground: var(--color-zinc-500);
-  --accent: var(--color-zinc-900);
-  --accent-foreground: var(--color-zinc-50);
-  --destructive: var(--color-red-600);
-  --destructive-foreground: var(--color-white);
-  --mono: var(--color-zinc-300);
-  --mono-foreground: var(--color-black);
-  --border: var(--color-zinc-800);
-  --input: var(--color-zinc-800);
-  --ring: var(--color-zinc-600);
+  /* Fondos y Superficies Nocturnas (Azul Noche Oficial) */
+  --background: #131922;
+  --foreground: #F2F0E6;
+  --card: #1D2532;
+  --card-foreground: #F2F0E6;
+  --popover: #1D2532;
+  --popover-foreground: #F2F0E6;
+
+  /* Cobre Luminoso en modo oscuro para alto contraste */
+  --primary: #C5A760;
+  --primary-foreground: #1D2532;
+
+  /* Estructuras secundarias nocturnas */
+  --secondary: #26303F;
+  --secondary-foreground: #F2F0E6;
+  --muted: #222B39;
+  --muted-foreground: #9DA3AF;
+  --accent: #26303F;
+  --accent-foreground: #F2F0E6;
+
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+
+  --mono: #E5E7EB;
+  --mono-foreground: #1D2532;
+  --border: #2C3748;
+  --input: #2C3748;
+  --ring: #C5A760;
+
+  --cobre: #C5A760;
+  --azul-negro: #1D2532;
+  --gris-funcional: #9DA3AF;
+  --gris-claro: #4B5565;
+  --crema: #F2F0E6;
+  --verde-territorial: #9CB269;
 }
 
 /** Theme Setup **/
@@ -78,6 +113,14 @@
   --color-mono: var(--mono);
   --color-mono-foreground: var(--mono-foreground);
 
+  /** Tokens Canónicos Gobernación de La Paz **/
+  --color-cobre: var(--cobre);
+  --color-azul-negro: var(--azul-negro);
+  --color-gris-funcional: var(--gris-funcional);
+  --color-gris-claro: var(--gris-claro);
+  --color-crema: var(--crema);
+  --color-verde-territorial: var(--verde-territorial);
+
   /** Base Styles **/
   --color-border: var(--border);
   --color-input: var(--input);
@@ -89,8 +132,9 @@
   --radius-sm: calc(var(--radius) - 4px);
 }
 
-/** Custom Font Size **/
+/** Tipografía y Custom Font Size **/
 @theme {
+  --font-sans: 'Poppins', var(--font-sans-fallback, ui-sans-serif, system-ui, sans-serif);
   --text-2sm: 0.8125rem;
   --text-2sm--line-height: calc(1.075 / 0.8125);
   --text-2xs: 0.6875rem;

@@ -45,91 +45,44 @@ const isMyAccountActive = computed(() => route.path.startsWith('/account'))
 
 <template>
   <div
-    class="flex-col fixed top-0 bottom-0 z-20 hidden bg-zinc-950 lg:flex items-stretch shrink-0 w-(--sidebar-width) dark [--kt-drawer-enable:true] lg:[--kt-drawer-enable:false]"
+    class="flex-col fixed top-0 bottom-0 z-20 hidden bg-azul-negro border-e border-white/5 lg:flex items-stretch shrink-0 w-(--sidebar-width) dark [--kt-drawer-enable:true] lg:[--kt-drawer-enable:false]"
     data-kt-drawer="true"
     data-kt-drawer-class="kt-drawer kt-drawer-start flex top-0 bottom-0"
     id="sidebar"
   >
     <!-- Sidebar Header -->
-    <div class="flex flex-col gap-2.5" id="sidebar_header">
-      <div class="flex items-center gap-2.5 px-3.5 h-[70px]">
-        <RouterLink to="/">
-          <img class="size-8.5" src="/media/app/mini-logo-circle-success.svg" />
-        </RouterLink>
-        <div class="kt-menu kt-menu-default grow" data-kt-menu="true">
-          <div
-            class="kt-menu-item grow"
-            data-kt-menu-item-offset="0, 15px"
-            data-kt-menu-item-placement="bottom-start"
-            data-kt-menu-item-toggle="dropdown"
-            data-kt-menu-item-trigger="hover"
-          >
-            <div class="kt-menu-label cursor-pointer text-mono font-medium grow justify-between">
-              <span class="text-lg font-medium text-inverse grow"> SEDALP </span>
-              <div class="flex flex-col text-mono font-medium">
-                <span class="kt-menu-arrow">
-                  <i class="ki-filled ki-up"> </i>
-                </span>
-                <span class="kt-menu-arrow">
-                  <i class="ki-filled ki-down"> </i>
-                </span>
-              </div>
-            </div>
-            <div class="kt-menu-dropdown w-48 py-2">
-              <div class="kt-menu-item">
-                <a class="kt-menu-link" href="#" @click.prevent tabindex="0">
-                  <span class="kt-menu-icon">
-                    <i class="ki-filled ki-profile-circle"> </i>
-                  </span>
-                  <span class="kt-menu-title"> Public Profile </span>
-                </a>
-              </div>
-              <div class="kt-menu-item">
-                <a class="kt-menu-link" href="#" @click.prevent tabindex="0">
-                  <span class="kt-menu-icon">
-                    <i class="ki-filled ki-setting-2"> </i>
-                  </span>
-                  <span class="kt-menu-title"> Account </span>
-                </a>
-              </div>
-              <div class="kt-menu-item">
-                <a class="kt-menu-link" href="#" @click.prevent tabindex="0">
-                  <span class="kt-menu-icon">
-                    <i class="ki-filled ki-users"> </i>
-                  </span>
-                  <span class="kt-menu-title"> Network </span>
-                </a>
-              </div>
-              <div class="kt-menu-item">
-                <a class="kt-menu-link" href="#" @click.prevent tabindex="0">
-                  <span class="kt-menu-icon">
-                    <i class="ki-filled ki-security-user"> </i>
-                  </span>
-                  <span class="kt-menu-title"> Authentication </span>
-                </a>
-              </div>
-            </div>
+    <div
+      class="flex flex-col items-center justify-center border-b border-white/10 px-4 py-6 bg-gradient-to-b from-white/[0.04] to-transparent"
+      id="sidebar_header"
+    >
+      <RouterLink
+        to="/"
+        class="flex flex-col items-center text-center transition-all duration-200"
+        title="Gobierno Autónomo Departamental de La Paz — SEDALP"
+      >
+        <!-- Logotipo Oficial sin márgenes, tamaño institucional prominente -->
+        <img
+          class="w-52 h-auto max-w-[225px] object-contain drop-shadow-md transition-transform duration-200 hover:scale-[1.03]"
+          src="/media/branding/logo_la_paz_sin_margenes.png"
+          alt="Gobernación de La Paz"
+        />
+
+        <!-- SEDALP debajo del logo: visible permanentemente con distinción institucional -->
+        <div class="mt-4 flex flex-col items-center">
+          <div class="flex items-center gap-2.5">
+            <span class="h-px w-6 bg-cobre/80"></span>
+            <span
+              class="text-base font-bold tracking-[0.25em] text-[#F8F7F2]"
+            >
+              SEDALP
+            </span>
+            <span class="h-px w-6 bg-cobre/80"></span>
           </div>
+          <span class="mt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#C5A760]">
+            Sistema de Administración
+          </span>
         </div>
-      </div>
-      <div v-if="false" class="flex items-center gap-2.5 px-3.5">
-        <!-- Input -->
-        <a
-          class="kt-btn kt-btn-secondary text-white [&_i]:text-white justify-center min-w-49.5"
-          href="#"
-          @click.prevent
-        >
-          <i class="ki-filled ki-plus"> </i>
-          Add New
-        </a>
-        <!-- End of Input -->
-        <button
-          class="kt-btn kt-btn-icon kt-btn-secondary [&_i]:text-white"
-          data-kt-modal-toggle="#search_modal"
-        >
-          <i class="ki-filled ki-magnifier"> </i>
-        </button>
-      </div>
+      </RouterLink>
     </div>
     <!-- End of Sidebar Header -->
     <!-- Sidebar menu -->

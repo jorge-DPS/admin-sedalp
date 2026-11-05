@@ -57,103 +57,138 @@ const login = async () => {
 
 <template>
   <div
-    class="page-bg flex min-h-screen w-full items-center justify-center bg-center bg-no-repeat px-4"
+    class="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#F8F7F3] dark:bg-[#131922] px-4 py-8"
   >
-    <div class="kt-card w-full max-w-[370px]">
-      <form class="kt-card-content flex flex-col gap-5 p-10" @submit.prevent="login">
-        <!-- Encabezado -->
-        <div class="mb-2.5 text-center">
-          <h1 class="text-mono mb-2 text-xl font-semibold">Iniciar sesión</h1>
+    <!-- Ondas decorativas institucionales en el fondo (Manual de Marca Págs. 1, 8 y 9) -->
+    <div
+      class="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-primary/10 blur-3xl dark:bg-primary/5"
+    ></div>
+    <div
+      class="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-azul-negro/10 blur-3xl dark:bg-azul-negro/30"
+    ></div>
 
-          <p class="text-secondary-foreground text-sm">Sistema de Información SEDALP</p>
-        </div>
+    <!-- Curva gráfica inferior inspirada en la papelería oficial -->
+    <div
+      class="pointer-events-none absolute inset-x-0 bottom-0 h-2 bg-gradient-to-r from-primary via-azul-negro to-primary"
+    ></div>
 
-        <!-- Mensaje de error -->
-        <div
-          v-if="error"
-          class="rounded-lg border border-danger/20 bg-danger/10 p-3 text-sm text-danger"
-        >
-          {{ error }}
-        </div>
+    <div class="relative z-10 w-full max-w-[420px]">
+      <div
+        class="kt-card border border-border/80 shadow-lg shadow-black/5 dark:shadow-black/20"
+      >
+        <form class="kt-card-content flex flex-col gap-5 p-8 sm:p-10" @submit.prevent="login">
+          <!-- Identidad Oficial: Logotipo Cobre sobre Fondo Claro -->
+          <div class="flex flex-col items-center text-center">
+            <img
+              src="/media/branding/la-paz-01.png"
+              alt="Gobernación de La Paz - Departamento Maravilloso"
+              class="h-16 w-auto object-contain dark:hidden mb-2"
+            />
+            <img
+              src="/media/branding/la-paz-04.png"
+              alt="Gobernación de La Paz - Departamento Maravilloso"
+              class="h-16 w-auto object-contain hidden dark:block mb-2"
+            />
 
-        <!-- Correo electrónico -->
-        <div class="flex flex-col gap-1.5">
-          <label for="email" class="kt-form-label text-mono font-normal">
-            Correo electrónico
-          </label>
+            <h1 class="text-xl font-semibold text-foreground tracking-tight">
+              Sistema SEDALP
+            </h1>
+            <p class="text-xs text-gris-funcional mt-0.5">
+              Gobierno Autónomo Departamental de La Paz
+            </p>
+          </div>
 
-          <input
-            id="email"
-            v-model.trim="email"
-            class="kt-input"
-            type="email"
-            placeholder="correo@sedalp.gob.bo"
-            autocomplete="email"
-            :disabled="loading"
-            required
-          />
-        </div>
+          <div class="border-t border-border/60"></div>
 
-        <!-- Contraseña -->
-        <div class="flex flex-col gap-1.5">
-          <label for="password" class="kt-form-label text-mono font-normal"> Contraseña </label>
+          <!-- Mensaje de error -->
+          <div
+            v-if="error"
+            class="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive"
+            role="alert"
+          >
+            {{ error }}
+          </div>
 
-          <div class="kt-input">
+          <!-- Correo electrónico -->
+          <div class="flex flex-col gap-1.5">
+            <label for="email" class="kt-form-label text-foreground font-medium text-xs">
+              Correo institucional
+            </label>
+
             <input
-              id="password"
-              v-model="password"
-              :type="showPassword ? 'text' : 'password'"
-              placeholder="Ingrese su contraseña"
-              autocomplete="current-password"
+              id="email"
+              v-model.trim="email"
+              class="kt-input"
+              type="email"
+              placeholder="funcionario@lapaz.gob.bo"
+              autocomplete="email"
               :disabled="loading"
               required
             />
-
-            <button
-              class="kt-btn kt-btn-sm kt-btn-ghost kt-btn-icon -me-1.5 bg-transparent!"
-              type="button"
-              :disabled="loading"
-              aria-label="Mostrar u ocultar contraseña"
-              @click="showPassword = !showPassword"
-            >
-              <i
-                :class="
-                  showPassword
-                    ? 'ki-filled ki-eye-slash text-muted-foreground'
-                    : 'ki-filled ki-eye text-muted-foreground'
-                "
-              ></i>
-            </button>
           </div>
-        </div>
 
-        <!-- Botón iniciar sesión -->
-        <button
-          class="kt-btn kt-btn-primary flex grow justify-center"
-          type="submit"
-          :disabled="loading"
-        >
-          <template v-if="loading">
-            <span
-              class="size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-            ></span>
+          <!-- Contraseña -->
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label for="password" class="kt-form-label text-foreground font-medium text-xs">
+                Contraseña
+              </label>
+            </div>
 
-            Ingresando...
-          </template>
+            <div class="kt-input">
+              <input
+                id="password"
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                placeholder="Ingrese su credencial"
+                autocomplete="current-password"
+                :disabled="loading"
+                required
+              />
 
-          <template v-else> Iniciar sesión </template>
-        </button>
-      </form>
+              <button
+                class="kt-btn kt-btn-sm kt-btn-ghost kt-btn-icon -me-1.5 bg-transparent!"
+                type="button"
+                :disabled="loading"
+                aria-label="Mostrar u ocultar contraseña"
+                @click="showPassword = !showPassword"
+              >
+                <i
+                  :class="
+                    showPassword
+                      ? 'ki-filled ki-eye-slash text-gris-funcional'
+                      : 'ki-filled ki-eye text-gris-funcional'
+                  "
+                ></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Botón iniciar sesión -->
+          <button
+            class="kt-btn kt-btn-primary flex grow justify-center font-medium mt-2 shadow-sm"
+            type="submit"
+            :disabled="loading"
+          >
+            <template v-if="loading">
+              <span
+                class="size-4 animate-spin rounded-full border-2 border-current border-t-transparent me-2"
+              ></span>
+              Ingresando al sistema...
+            </template>
+
+            <template v-else>
+              <i class="ki-filled ki-entrance-right me-1.5"></i>
+              Iniciar sesión
+            </template>
+          </button>
+        </form>
+      </div>
+
+      <!-- Pie de login institucional -->
+      <p class="mt-6 text-center text-xs text-gris-funcional">
+        Órgano Ejecutivo Departamental de La Paz • Gestión Institucional
+      </p>
     </div>
   </div>
 </template>
-
-<style scoped>
-.page-bg {
-  background-image: url('/media/images/2600x1200/bg-10.png');
-}
-
-:global(.dark) .page-bg {
-  background-image: url('/media/images/2600x1200/bg-10-dark.png');
-}
-</style>
