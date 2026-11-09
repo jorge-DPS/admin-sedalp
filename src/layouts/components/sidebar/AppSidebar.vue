@@ -45,7 +45,7 @@ const isMyAccountActive = computed(() => route.path.startsWith('/account'))
 
 <template>
   <div
-    class="flex-col fixed top-0 bottom-0 z-20 hidden bg-azul-negro border-e border-white/5 lg:flex items-stretch shrink-0 w-(--sidebar-width) dark [--kt-drawer-enable:true] lg:[--kt-drawer-enable:false]"
+    class="flex-col fixed top-0 bottom-0 z-20 hidden bg-azul-negro lg:flex items-stretch shrink-0 w-(--sidebar-width) dark [--kt-drawer-enable:true] lg:[--kt-drawer-enable:false]"
     data-kt-drawer="true"
     data-kt-drawer-class="kt-drawer kt-drawer-start flex top-0 bottom-0"
     id="sidebar"
