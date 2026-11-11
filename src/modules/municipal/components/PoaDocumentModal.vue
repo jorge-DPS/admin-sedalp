@@ -17,6 +17,7 @@ const props = defineProps<{
   fiscalYear: number
   confirmPublication: boolean
   writable: boolean
+  inline?: boolean
 }>()
 const emit = defineEmits<{
   close: []
@@ -88,6 +89,7 @@ async function confirm(): Promise<void> {
   <MunicipalDialog
     :title="confirming ? 'Confirmar publicación del PDF' : 'Detalle del documento PDF'"
     :busy="busy"
+    :inline="inline"
     @close="emit('close')"
   >
     <div class="flex flex-col gap-4">

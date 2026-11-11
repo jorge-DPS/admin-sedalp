@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useTerritoryCatalog } from '../composables/useTerritoryCatalog'
+import { useRegionProvinces } from '../composables/useRegionProvinces'
 import type { TerritoryCatalogKind } from '../types/territory.types'
-
 const props = withDefaults(
   defineProps<{
     id: string
@@ -10,14 +10,28 @@ const props = withDefaults(
     modelValue: number | null
     active?: boolean
     disabled?: boolean
+    regionId?: number | null
   }>(),
-  { active: undefined },
+  { active: undefined, regionId: null },
 )
-const emit = defineEmits<{ 'update:modelValue': [value: number | null] }>()
-const { items, loading, loaded, error, permitted, reload } = useTerritoryCatalog(
+const emit = defineEmits<{ 'update:modelValue': [value: number | null]; busy: [value: boolean] }>()
+const catalog = useTerritoryCatalog(
   () => props.kind,
   () => props.active,
 )
+const region = computed(() => (props.kind === 'provinces' ? props.regionId : null))
+const related = useRegionProvinces(region)
+const items = computed(() =>
+  region.value === null
+    ? catalog.items.value
+    : catalog.items.value.filter((item) => related.ids.value?.has(item.id)),
+)
+const loading = computed(() => catalog.loading.value || related.loading.value)
+const loaded = computed(
+  () => catalog.loaded.value && (region.value === null || related.ids.value !== null),
+)
+const error = computed(() => catalog.error.value || related.error.value)
+const permitted = catalog.permitted
 const label = computed(() => (props.kind === 'regions' ? 'Región' : 'Provincia'))
 const plural = computed(() => (props.kind === 'regions' ? 'regiones' : 'provincias'))
 const selectedId = computed({
@@ -27,13 +41,17 @@ const selectedId = computed({
 const selectionMissing = computed(
   () => props.modelValue !== null && !items.value.some((item) => item.id === props.modelValue),
 )
-
+watch(loading, (value) => emit('busy', value), { immediate: true, flush: 'sync' })
 watch(
   () => [loaded.value, items.value, props.modelValue],
   () => {
     if (loaded.value && selectionMissing.value) emit('update:modelValue', null)
   },
 )
+function reload(): void {
+  if (catalog.error.value || !catalog.loaded.value) void catalog.reload()
+  if (related.error.value) void related.reload()
+}
 </script>
 
 <template>

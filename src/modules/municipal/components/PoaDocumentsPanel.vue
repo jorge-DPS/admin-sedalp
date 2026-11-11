@@ -11,8 +11,13 @@ import MunicipalFeedback from './MunicipalFeedback.vue'
 import PoaUploadModal from './PoaUploadModal.vue'
 import PoaDocumentModal from './PoaDocumentModal.vue'
 
-const props = defineProps<{ municipalityId: number; poa: MunicipalPoa; writable: boolean }>()
-const emit = defineEmits<{ changed: []; busy: [value: boolean] }>()
+const props = defineProps<{
+  municipalityId: number
+  poa: MunicipalPoa
+  writable: boolean
+  inline?: boolean
+}>()
+const emit = defineEmits<{ changed: []; busy: [value: boolean]; dirty: [value: boolean] }>()
 const auth = useAuthStore()
 const type = ref<PoaDocumentType | ''>('')
 const current = ref<'' | 'yes' | 'no'>('')
@@ -74,6 +79,7 @@ watch(
   { flush: 'sync' },
 )
 watch(actionBusy, (value) => emit('busy', value), { flush: 'sync' })
+watch(uploadOpen, (value) => emit('dirty', value), { immediate: true, flush: 'sync' })
 function uploaded(document: PoaDocument): void {
   uploadOpen.value = false
   type.value = ''
@@ -93,176 +99,180 @@ function publicationSaved(document: PoaDocument): void {
 </script>
 <template>
   <section class="flex min-w-0 flex-col gap-4" aria-labelledby="poa-documents-title">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <h2 id="poa-documents-title" class="text-xl font-semibold">Documentos y versiones</h2>
-      <button
-        v-if="canUpload"
-        class="kt-btn kt-btn-primary"
-        type="button"
-        :disabled="actionBusy"
-        @click="uploadOpen = true"
-      >
-        Subir PDF
-      </button>
-    </div>
-    <p v-if="!permitted" role="status" class="rounded-xl border border-border p-4 text-sm">
-      No tienes permiso para consultar los documentos. Las acciones autorizadas se muestran de forma
-      independiente.
-    </p>
-    <template v-if="permitted">
-      <p v-if="currentLoading" role="status" class="text-sm text-muted-foreground">
-        Consultando versión vigente…
-      </p>
-      <MunicipalFeedback :error="currentError" />
-      <div
-        v-if="currentDocument"
-        class="rounded-xl border border-primary/25 bg-primary/5 p-4 text-sm"
-      >
-        <strong>Versión vigente: {{ currentDocument.version_number }}</strong> ·
-        {{ currentDocument.title }}
+    <div v-show="!inline || (!uploadOpen && !selected)" class="flex min-w-0 flex-col gap-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="poa-documents-title" class="text-xl font-semibold">Documentos y versiones</h2>
+        <button
+          v-if="canUpload"
+          class="kt-btn kt-btn-primary"
+          type="button"
+          :disabled="actionBusy"
+          @click="uploadOpen = true"
+        >
+          Subir PDF
+        </button>
       </div>
-      <p v-else-if="!currentLoading && !currentError" class="text-sm text-muted-foreground">
-        Este POA todavía no tiene una versión vigente.
+      <p v-if="!permitted" role="status" class="rounded-xl border border-border p-4 text-sm">
+        No tienes permiso para consultar los documentos. Las acciones autorizadas se muestran de
+        forma independiente.
       </p>
-      <p class="text-sm text-muted-foreground">
-        Una versión publicada puede seguir disponible públicamente aunque deje de ser vigente.
-      </p>
-      <div class="grid gap-3 sm:grid-cols-3">
-        <label class="flex flex-col gap-2 text-sm"
-          >Tipo de documento<select v-model="type" class="kt-select w-full text-foreground">
-            <option value="">Todos los tipos</option>
-            <option value="initial">Inicial</option>
-            <option value="reformulated">Reformulado</option>
-          </select></label
+      <template v-if="permitted">
+        <p v-if="currentLoading" role="status" class="text-sm text-muted-foreground">
+          Consultando versión vigente…
+        </p>
+        <MunicipalFeedback :error="currentError" />
+        <div
+          v-if="currentDocument"
+          class="rounded-xl border border-primary/25 bg-primary/5 p-4 text-sm"
         >
-        <label class="flex flex-col gap-2 text-sm"
-          >Vigencia<select v-model="current" class="kt-select w-full text-foreground">
-            <option value="">Todas las versiones</option>
-            <option value="yes">Vigente</option>
-            <option value="no">No vigentes</option>
-          </select></label
-        >
-        <label class="flex flex-col gap-2 text-sm"
-          >Publicación<select v-model="published" class="kt-select w-full text-foreground">
-            <option value="">Todos los estados</option>
-            <option value="yes">Publicados</option>
-            <option value="no">No publicados</option>
-          </select></label
-        >
-      </div>
-      <MunicipalFeedback :error="error" retry @retry="reload" />
-      <MunicipalFeedback :error="downloadError" />
-      <p
-        v-if="notice"
-        role="status"
-        class="rounded-xl border border-primary/25 bg-primary/5 p-4 text-sm"
-      >
-        {{ notice }}
-      </p>
-      <div v-if="!error" class="kt-card min-w-0" :aria-busy="loading">
-        <div class="kt-card-table overflow-x-auto">
-          <table class="kt-table align-middle">
-            <thead>
-              <tr>
-                <th>Versión / tipo</th>
-                <th>Documento</th>
-                <th>Recepción / tamaño</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="loading">
-                <td colspan="5" class="py-10 text-center text-muted-foreground">
-                  <span role="status">Cargando documentos…</span>
-                </td>
-              </tr>
-              <template v-else>
-                <tr v-for="document in documents?.data" :key="document.id">
-                  <td>
-                    <p class="font-semibold">Versión {{ document.version_number }}</p>
-                    <p class="text-xs text-muted-foreground">
-                      {{ document.document_type === 'initial' ? 'Inicial' : 'Reformulado' }}
-                    </p>
-                  </td>
-                  <td>
-                    <p class="font-medium">{{ document.title }}</p>
-                    <p class="max-w-72 break-all text-xs text-muted-foreground">
-                      {{ document.original_filename ?? 'Nombre no informado' }}
-                    </p>
-                  </td>
-                  <td>
-                    <p>{{ municipalDate(document.received_at) }}</p>
-                    <p class="text-xs text-muted-foreground">
-                      {{ fileSize(document.file_size_bytes) }}
-                    </p>
-                  </td>
-                  <td>
-                    <div class="flex flex-col items-start gap-2">
-                      <span
-                        class="kt-badge kt-badge-outline"
-                        :class="document.is_published ? 'kt-badge-success' : 'kt-badge-secondary'"
-                        >{{ document.is_published ? 'Publicado' : 'No publicado' }}</span
-                      ><span
-                        class="kt-badge kt-badge-outline"
-                        :class="document.is_current ? 'kt-badge-primary' : 'kt-badge-secondary'"
-                        >{{ document.is_current ? 'Vigente' : 'No vigente' }}</span
-                      >
-                    </div>
-                  </td>
-                  <td>
-                    <div class="flex flex-wrap gap-2">
-                      <button
-                        class="kt-btn kt-btn-sm kt-btn-outline text-foreground"
-                        type="button"
-                        :aria-label="`Detalle de versión ${document.version_number}`"
-                        @click="selected = { id: document.id, publish: false }"
-                      >
-                        Detalle
-                      </button>
-                      <button
-                        class="kt-btn kt-btn-sm kt-btn-outline text-foreground"
-                        type="button"
-                        :disabled="downloading"
-                        :aria-label="`Descargar versión ${document.version_number}`"
-                        @click="download(document.id, document.version_number)"
-                      >
-                        Descargar
-                      </button>
-                      <button
-                        v-if="canPublish && !(document.is_current && document.is_published)"
-                        class="kt-btn kt-btn-sm kt-btn-primary"
-                        type="button"
-                        :disabled="actionBusy"
-                        :aria-label="`Publicar versión ${document.version_number}`"
-                        @click="selected = { id: document.id, publish: true }"
-                      >
-                        Publicar como vigente
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="!documents?.data.length">
-                  <td colspan="5" class="py-10 text-center text-muted-foreground">
-                    No hay documentos para estos filtros.
-                  </td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
+          <strong>Versión vigente: {{ currentDocument.version_number }}</strong> ·
+          {{ currentDocument.title }}
         </div>
-        <TerritoryPagination
-          :meta="documents?.meta ?? null"
-          :loading="loading"
-          label="Paginación de documentos POA"
-          class="kt-card-footer"
-          @page="page = $event"
-        />
-      </div>
-    </template>
-    <p v-if="!permitted && notice" role="status" class="text-sm">{{ notice }}</p>
+        <p v-else-if="!currentLoading && !currentError" class="text-sm text-muted-foreground">
+          Este POA todavía no tiene una versión vigente.
+        </p>
+        <p class="text-sm text-muted-foreground">
+          Una versión publicada puede seguir disponible públicamente aunque deje de ser vigente.
+        </p>
+        <div class="grid gap-3 sm:grid-cols-3">
+          <label class="flex flex-col gap-2 text-sm"
+            >Tipo de documento<select v-model="type" class="kt-select w-full text-foreground">
+              <option value="">Todos los tipos</option>
+              <option value="initial">Inicial</option>
+              <option value="reformulated">Reformulado</option>
+            </select></label
+          >
+          <label class="flex flex-col gap-2 text-sm"
+            >Vigencia<select v-model="current" class="kt-select w-full text-foreground">
+              <option value="">Todas las versiones</option>
+              <option value="yes">Vigente</option>
+              <option value="no">No vigentes</option>
+            </select></label
+          >
+          <label class="flex flex-col gap-2 text-sm"
+            >Publicación<select v-model="published" class="kt-select w-full text-foreground">
+              <option value="">Todos los estados</option>
+              <option value="yes">Publicados</option>
+              <option value="no">No publicados</option>
+            </select></label
+          >
+        </div>
+        <MunicipalFeedback :error="error" retry @retry="reload" />
+        <MunicipalFeedback :error="downloadError" />
+        <p
+          v-if="notice"
+          role="status"
+          class="rounded-xl border border-primary/25 bg-primary/5 p-4 text-sm"
+        >
+          {{ notice }}
+        </p>
+        <div v-if="!error" class="kt-card min-w-0" :aria-busy="loading">
+          <div class="kt-card-table overflow-x-auto">
+            <table class="kt-table align-middle">
+              <thead>
+                <tr>
+                  <th>Versión / tipo</th>
+                  <th>Documento</th>
+                  <th>Recepción / tamaño</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="loading">
+                  <td colspan="5" class="py-10 text-center text-muted-foreground">
+                    <span role="status">Cargando documentos…</span>
+                  </td>
+                </tr>
+                <template v-else>
+                  <tr v-for="document in documents?.data" :key="document.id">
+                    <td>
+                      <p class="font-semibold">Versión {{ document.version_number }}</p>
+                      <p class="text-xs text-muted-foreground">
+                        {{ document.document_type === 'initial' ? 'Inicial' : 'Reformulado' }}
+                      </p>
+                    </td>
+                    <td>
+                      <p class="font-medium">{{ document.title }}</p>
+                      <p class="max-w-72 break-all text-xs text-muted-foreground">
+                        {{ document.original_filename ?? 'Nombre no informado' }}
+                      </p>
+                    </td>
+                    <td>
+                      <p>{{ municipalDate(document.received_at) }}</p>
+                      <p class="text-xs text-muted-foreground">
+                        {{ fileSize(document.file_size_bytes) }}
+                      </p>
+                    </td>
+                    <td>
+                      <div class="flex flex-col items-start gap-2">
+                        <span
+                          class="kt-badge kt-badge-outline"
+                          :class="document.is_published ? 'kt-badge-success' : 'kt-badge-secondary'"
+                          >{{ document.is_published ? 'Publicado' : 'No publicado' }}</span
+                        ><span
+                          class="kt-badge kt-badge-outline"
+                          :class="document.is_current ? 'kt-badge-primary' : 'kt-badge-secondary'"
+                          >{{ document.is_current ? 'Vigente' : 'No vigente' }}</span
+                        >
+                      </div>
+                    </td>
+                    <td>
+                      <div class="flex flex-wrap gap-2">
+                        <button
+                          class="kt-btn kt-btn-sm kt-btn-outline text-foreground"
+                          type="button"
+                          :aria-label="`Detalle de versión ${document.version_number}`"
+                          @click="selected = { id: document.id, publish: false }"
+                        >
+                          Detalle
+                        </button>
+                        <button
+                          class="kt-btn kt-btn-sm kt-btn-outline text-foreground"
+                          type="button"
+                          :disabled="downloading"
+                          :aria-label="`Descargar versión ${document.version_number}`"
+                          @click="download(document.id, document.version_number)"
+                        >
+                          Descargar
+                        </button>
+                        <button
+                          v-if="canPublish && !(document.is_current && document.is_published)"
+                          class="kt-btn kt-btn-sm kt-btn-primary"
+                          type="button"
+                          :disabled="actionBusy"
+                          :aria-label="`Publicar versión ${document.version_number}`"
+                          @click="selected = { id: document.id, publish: true }"
+                        >
+                          Publicar como vigente
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr v-if="!documents?.data.length">
+                    <td colspan="5" class="py-10 text-center text-muted-foreground">
+                      No hay documentos para estos filtros.
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <TerritoryPagination
+            :meta="documents?.meta ?? null"
+            :loading="loading"
+            label="Paginación de documentos POA"
+            class="kt-card-footer"
+            @page="page = $event"
+          />
+        </div>
+      </template>
+      <p v-if="!permitted && notice" role="status" class="text-sm">{{ notice }}</p>
+    </div>
     <PoaUploadModal
       v-if="uploadOpen"
+      :inline="inline"
+      :writable="writable"
       :municipality-id="municipalityId"
       :poa-id="poa.id"
       :fiscal-year="poa.fiscal_year"
@@ -272,6 +282,7 @@ function publicationSaved(document: PoaDocument): void {
     />
     <PoaDocumentModal
       v-if="selected && permitted"
+      :inline="inline"
       :municipality-id="municipalityId"
       :poa-id="poa.id"
       :document-id="selected.id"

@@ -15,8 +15,10 @@ const auth = useAuthStore()
 const municipalityId = computed(() => positiveId(route.params.municipalityId))
 const poaId = computed(() => positiveId(route.params.poaId))
 const busy = ref(false)
+const dirty = ref(false)
 const {
   municipality,
+  loading: municipalityLoading,
   error: municipalityError,
   reload: reloadMunicipality,
 } = useMunicipality(municipalityId)
@@ -33,9 +35,15 @@ const {
       ? null
       : poasApi.show(municipalityId.value, poaId.value, signal),
 )
-const writable = computed(() => municipality.value?.active !== false)
+const writable = computed(
+  () =>
+    !municipalityLoading.value &&
+    !municipalityError.value &&
+    municipality.value?.id === municipalityId.value &&
+    municipality.value?.active === true,
+)
 function canNavigate(): boolean {
-  return !busy.value || !auth.isAuthenticated
+  return (!busy.value && !dirty.value) || !auth.isAuthenticated
 }
 onBeforeRouteLeave(canNavigate)
 onBeforeRouteUpdate(canNavigate)
@@ -73,16 +81,24 @@ onBeforeRouteUpdate(canNavigate)
               {{ poa.notes ?? 'Sin observaciones' }}
             </p>
             <p v-if="!writable" class="text-sm text-muted-foreground">
-              Municipio inactivo: solo consulta y descarga.
+              {{
+                municipalityLoading
+                  ? 'Confirmando el estado del municipio…'
+                  : municipality?.active === false
+                    ? 'Municipio inactivo: solo consulta y descarga.'
+                    : 'Solo consulta hasta confirmar que el municipio existe y está activo.'
+              }}
             </p>
           </div>
         </section>
         <PoaDocumentsPanel
+          inline
           :key="`${municipalityId}-${poa.id}`"
           :municipality-id="municipalityId"
           :poa="poa"
           :writable="writable"
           @busy="busy = $event"
+          @dirty="dirty = $event"
         />
       </template>
     </div>

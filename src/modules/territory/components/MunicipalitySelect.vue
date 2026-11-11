@@ -41,7 +41,7 @@ const selected = computed(() =>
     ? municipality.value
     : municipalities.value.find((item) => item.id === props.modelValue),
 )
-watch(selected, (value) => emit('selection', value ?? null), { immediate: true })
+watch(municipality, (value) => emit('selection', value), { immediate: true })
 const selectionOutsidePage = computed(
   () =>
     props.modelValue !== null && !municipalities.value.some((item) => item.id === props.modelValue),

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useId } from 'vue'
+import { ref, useId } from 'vue'
 import TerritoryCatalogSelect from './TerritoryCatalogSelect.vue'
 import MunicipalitySelect from './MunicipalitySelect.vue'
 import type { Municipality } from '../types/territory.types'
@@ -14,6 +14,7 @@ const regionId = defineModel<number | null>('regionId', { default: null })
 const provinceId = defineModel<number | null>('provinceId', { default: null })
 const municipalityId = defineModel<number | null>('municipalityId', { default: null })
 const id = useId()
+const provinceLoading = ref(false)
 </script>
 
 <template>
@@ -28,11 +29,13 @@ const id = useId()
       :id="`${id}-province`"
       v-model="provinceId"
       kind="provinces"
+      :region-id="regionId"
+      @busy="provinceLoading = $event"
       :disabled="disabled"
     />
     <p class="text-xs leading-5 text-muted-foreground sm:col-span-2">
-      Región y provincia son filtros independientes. Una provincia puede incluir municipios de
-      distintas regiones.
+      Las provincias se relacionan con la región a través de sus municipios. Una provincia puede
+      incluir municipios de distintas regiones.
     </p>
     <MunicipalitySelect
       v-if="withMunicipality"
@@ -42,7 +45,7 @@ const id = useId()
       :region-id="regionId"
       :province-id="provinceId"
       :active="active"
-      :disabled="disabled"
+      :disabled="disabled || provinceLoading"
       class="sm:col-span-2"
     />
   </div>

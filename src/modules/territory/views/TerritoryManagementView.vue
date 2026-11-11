@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue'
 import AccessPageHeader from '@/components/ui/AccessPageHeader.vue'
 import TerritorySelector from '../components/TerritorySelector.vue'
 import TerritoryPagination from '../components/TerritoryPagination.vue'
-import MunicipalityDetailModal from '../components/MunicipalityDetailModal.vue'
+import MunicipalityAdministrationDialog from '../components/MunicipalityAdministrationDialog.vue'
 import { useMunicipalities } from '../composables/useMunicipalities'
 
 const regionId = ref<number | null>(null)
@@ -180,10 +180,10 @@ function clearFilters(): void {
                       <button
                         class="kt-btn kt-btn-sm kt-btn-outline text-foreground"
                         type="button"
-                        :aria-label="`Ver detalle de ${municipality.name}`"
+                        :aria-label="`Administrar ${municipality.name}`"
                         @click="detailId = municipality.id"
                       >
-                        Ver detalle
+                        Administrar
                       </button>
                     </td>
                   </tr>
@@ -205,8 +205,9 @@ function clearFilters(): void {
         </section>
       </template>
     </div>
-    <MunicipalityDetailModal
+    <MunicipalityAdministrationDialog
       v-if="detailId !== null"
+      :key="detailId"
       :municipality-id="detailId"
       @close="detailId = null"
     />

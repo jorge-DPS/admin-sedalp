@@ -9,6 +9,8 @@ const props = defineProps<{
   municipalityId: number
   municipalityName: string
   poa?: MunicipalPoa
+  inline?: boolean
+  writable: boolean
 }>()
 const emit = defineEmits<{ close: []; saved: [poa: MunicipalPoa]; busy: [value: boolean] }>()
 const { busy, error, create, update } = usePoaActions(props.municipalityId)
@@ -25,7 +27,7 @@ const form = reactive({
 })
 watch(busy, (value) => emit('busy', value), { flush: 'sync' })
 async function submit(): Promise<void> {
-  if (busy.value) return
+  if (busy.value || !props.writable) return
   const fields = { title: form.title.trim() || null, notes: form.notes.trim() || null }
   const saved = props.poa
     ? await update(props.poa.id, fields)
@@ -37,11 +39,12 @@ async function submit(): Promise<void> {
   <MunicipalDialog
     :title="poa ? 'Editar POA municipal' : 'Registrar POA municipal'"
     :busy="busy"
+    :inline="inline"
     @close="emit('close')"
   >
     <form class="flex flex-col gap-4" @submit.prevent="submit">
       <MunicipalFeedback :error="error" />
-      <fieldset :disabled="busy" class="flex min-w-0 flex-col gap-4">
+      <fieldset :disabled="busy || !writable" class="flex min-w-0 flex-col gap-4">
         <div>
           <p class="text-xs text-muted-foreground">Municipio</p>
           <p class="break-words font-medium">{{ municipalityName }}</p>
@@ -81,7 +84,7 @@ async function submit(): Promise<void> {
         >
           Cancelar
         </button>
-        <button class="kt-btn kt-btn-primary" type="submit" :disabled="busy">
+        <button class="kt-btn kt-btn-primary" type="submit" :disabled="busy || !writable">
           {{ busy ? 'Guardando…' : 'Guardar POA' }}
         </button>
       </div>

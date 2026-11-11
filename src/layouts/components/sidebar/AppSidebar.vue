@@ -6,7 +6,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import CartographyNavigation from './CartographyNavigation.vue'
 import TerritoryNavigation from './TerritoryNavigation.vue'
-import MunicipalNavigation from './MunicipalNavigation.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -120,6 +119,9 @@ const isMyAccountActive = computed(() => route.path.startsWith('/account'))
               </RouterLink>
             </div>
 
+            <TerritoryNavigation />
+            <CartographyNavigation />
+
             <!-- Administration -->
             <div
               v-if="canViewAdministration"
@@ -131,8 +133,8 @@ const isMyAccountActive = computed(() => route.path.startsWith('/account'))
               data-kt-menu-item-toggle="accordion"
               data-kt-menu-item-trigger="click"
             >
-              <div
-                class="kt-menu-link gap-2.5 py-2 px-2.5 kt-menu-item-here:bg-secondary kt-menu-item-show:bg-secondary kt-menu-link-hover:bg-secondary"
+              <button type="button" aria-label="Administración"
+                class="kt-menu-link w-full gap-2.5 py-2 px-2.5 kt-menu-item-here:bg-secondary kt-menu-item-show:bg-secondary kt-menu-link-hover:bg-secondary"
               >
                 <span
                   class="kt-menu-icon items-start text-muted-foreground text-lg kt-menu-item-here:text-mono kt-menu-item-show:text-mono kt-menu-link-hover:text-mono"
@@ -154,7 +156,7 @@ const isMyAccountActive = computed(() => route.path.startsWith('/account'))
                     <i class="ki-filled ki-up text-xs"></i>
                   </span>
                 </span>
-              </div>
+              </button>
 
               <div class="kt-menu-accordion gap-px ps-7" :class="{ show: isAdministrationActive }">
                 <div
@@ -199,10 +201,6 @@ const isMyAccountActive = computed(() => route.path.startsWith('/account'))
               </div>
             </div>
 
-            <TerritoryNavigation />
-            <MunicipalNavigation />
-            <CartographyNavigation />
-
             <!-- Communication -->
             <div
               v-if="canViewNews"
@@ -211,8 +209,8 @@ const isMyAccountActive = computed(() => route.path.startsWith('/account'))
               data-kt-menu-item-toggle="accordion"
               data-kt-menu-item-trigger="click"
             >
-              <div
-                class="kt-menu-link gap-2.5 py-2 px-2.5 kt-menu-item-here:bg-secondary kt-menu-item-show:bg-secondary kt-menu-link-hover:bg-secondary"
+              <button type="button" aria-label="Comunicación"
+                class="kt-menu-link w-full gap-2.5 py-2 px-2.5 kt-menu-item-here:bg-secondary kt-menu-item-show:bg-secondary kt-menu-link-hover:bg-secondary"
               >
                 <span
                   class="kt-menu-icon items-start text-muted-foreground text-lg kt-menu-item-here:text-mono kt-menu-item-show:text-mono kt-menu-link-hover:text-mono"
@@ -233,7 +231,7 @@ const isMyAccountActive = computed(() => route.path.startsWith('/account'))
                     ><i class="ki-filled ki-up text-xs"></i
                   ></span>
                 </span>
-              </div>
+              </button>
               <div class="kt-menu-accordion gap-px ps-7" :class="{ show: isCommunicationActive }">
                 <div class="kt-menu-item" :class="{ active: route.name === 'news.index' }">
                   <RouterLink

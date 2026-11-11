@@ -6,7 +6,13 @@ import type { PoaDocument } from '../types/poa.types'
 import MunicipalDialog from './MunicipalDialog.vue'
 import MunicipalFeedback from './MunicipalFeedback.vue'
 
-const props = defineProps<{ municipalityId: number; poaId: number; fiscalYear: number }>()
+const props = defineProps<{
+  municipalityId: number
+  poaId: number
+  fiscalYear: number
+  inline?: boolean
+  writable: boolean
+}>()
 const emit = defineEmits<{ close: []; saved: [document: PoaDocument]; busy: [value: boolean] }>()
 const { busy, error, progress, upload } = usePoaDocumentActions(props.municipalityId, props.poaId)
 const file = ref<File | null>(null)
@@ -24,7 +30,7 @@ function remove(): void {
   error.value = null
 }
 async function submit(): Promise<void> {
-  if (!file.value || busy.value) return
+  if (!file.value || busy.value || !props.writable) return
   const saved = await upload({ ...form, pdf: file.value })
   if (saved) {
     remove()
@@ -33,14 +39,19 @@ async function submit(): Promise<void> {
 }
 </script>
 <template>
-  <MunicipalDialog title="Subir nueva versión PDF" :busy="busy" @close="emit('close')">
+  <MunicipalDialog
+    title="Subir nueva versión PDF"
+    :busy="busy"
+    :inline="inline"
+    @close="emit('close')"
+  >
     <form class="flex flex-col gap-4" @submit.prevent="submit">
       <p class="text-sm text-muted-foreground">
         POA {{ fiscalYear }}. Cada carga conserva un archivo independiente. Laravel asigna el número
         y el tipo de versión; subir no publica el documento.
       </p>
       <MunicipalFeedback :error="error" />
-      <fieldset :disabled="busy" class="flex min-w-0 flex-col gap-4">
+      <fieldset :disabled="busy || !writable" class="flex min-w-0 flex-col gap-4">
         <label class="flex flex-col gap-2 text-sm font-medium"
           >Documento PDF
           <input
@@ -114,7 +125,7 @@ async function submit(): Promise<void> {
         >
           Cancelar
         </button>
-        <button class="kt-btn kt-btn-primary" type="submit" :disabled="busy || !file">
+        <button class="kt-btn kt-btn-primary" type="submit" :disabled="busy || !file || !writable">
           {{ busy ? 'Procesando…' : 'Registrar versión PDF' }}
         </button>
       </div>
