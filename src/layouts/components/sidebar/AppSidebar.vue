@@ -5,6 +5,8 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth'
 import CartographyNavigation from './CartographyNavigation.vue'
+import TerritoryNavigation from './TerritoryNavigation.vue'
+import MunicipalNavigation from './MunicipalNavigation.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -47,12 +49,12 @@ const isMyAccountActive = computed(() => route.path.startsWith('/account'))
   <div
     class="flex-col fixed top-0 bottom-0 z-20 hidden bg-azul-negro lg:flex items-stretch shrink-0 w-(--sidebar-width) dark [--kt-drawer-enable:true] lg:[--kt-drawer-enable:false]"
     data-kt-drawer="true"
-    data-kt-drawer-class="kt-drawer kt-drawer-start flex top-0 bottom-0"
+    data-kt-drawer-class="kt-drawer kt-drawer-start"
     id="sidebar"
   >
     <!-- Sidebar Header -->
     <div
-      class="flex flex-col items-center justify-center border-b border-white/10 px-4 py-6 bg-gradient-to-b from-white/[0.04] to-transparent"
+      class="flex shrink-0 flex-col items-center justify-center border-b border-white/10 px-4 py-6 bg-gradient-to-b from-white/[0.04] to-transparent"
       id="sidebar_header"
     >
       <RouterLink
@@ -86,14 +88,9 @@ const isMyAccountActive = computed(() => route.path.startsWith('/account'))
     </div>
     <!-- End of Sidebar Header -->
     <!-- Sidebar menu -->
-    <div class="flex items-stretch grow shrink-0 justify-center my-5" id="sidebar_menu">
+    <div class="my-5 flex min-h-0 flex-1 items-stretch justify-center" id="sidebar_menu">
       <div
-        class="kt-scrollable-y-auto grow"
-        data-kt-scrollable="true"
-        data-kt-scrollable-dependencies="#sidebar_header, #sidebar_footer"
-        data-kt-scrollable-height="auto"
-        data-kt-scrollable-offset="0px"
-        data-kt-scrollable-wrappers="#sidebar_menu"
+        class="kt-scrollable-y-auto min-h-0 w-full"
       >
         <!-- Primary Menu -->
         <div class="mb-5">
@@ -202,6 +199,8 @@ const isMyAccountActive = computed(() => route.path.startsWith('/account'))
               </div>
             </div>
 
+            <TerritoryNavigation />
+            <MunicipalNavigation />
             <CartographyNavigation />
 
             <!-- Communication -->

@@ -1,4 +1,5 @@
 import api from '@/services/api'
+import { territoryApi } from '@/modules/territory/api/territory.api'
 import type { PaginatedResponse } from '@/shared/api/types'
 import type {
   MapRegion,
@@ -23,11 +24,7 @@ export const mapsApi = {
     page: number,
     signal?: AbortSignal,
   ): Promise<PaginatedResponse<MapRegion>> {
-    const { data } = await api.get<PaginatedResponse<MapRegion>>('/admin/regions', {
-      params: { search: search.trim() || undefined, page, per_page: 15 },
-      signal,
-    })
-    return data
+    return territoryApi.regions({ search, page, per_page: 15 }, signal)
   },
 
   async boundary(regionId: number, signal?: AbortSignal): Promise<RegionBoundary> {

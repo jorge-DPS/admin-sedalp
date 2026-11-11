@@ -1,9 +1,6 @@
-export interface MapRegion {
-  id: number
-  name: string
-  code: string | null
-  active: boolean
-}
+import type { Region } from '@/modules/territory/types/territory.types'
+
+export type MapRegion = Pick<Region, 'id' | 'name' | 'code' | 'active'>
 
 export interface RegionBoundary {
   type: 'Feature'

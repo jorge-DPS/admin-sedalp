@@ -31,6 +31,28 @@ const router = createRouter({
 
       children: [
         {
+          path: 'municipal/poas',
+          name: 'municipal.poas.index',
+          component: () => import('@/modules/municipal/views/MunicipalPoasView.vue'),
+          meta: { title: 'POA municipales', breadcrumbs: ['Municipal', 'POA'], permission: 'municipal.poas.view' },
+        },
+        {
+          path: 'municipal/municipios/:municipalityId(\\d+)/poas/:poaId(\\d+)',
+          name: 'municipal.poas.show',
+          component: () => import('@/modules/municipal/views/MunicipalPoaDetailView.vue'),
+          meta: { title: 'Detalle del POA', breadcrumbs: ['Municipal', 'POA', 'Documentos'], permission: 'municipal.poas.view' },
+        },
+        {
+          path: 'territorio/municipios',
+          name: 'territory.municipalities.index',
+          component: () => import('@/modules/territory/views/TerritoryManagementView.vue'),
+          meta: {
+            title: 'Consulta territorial',
+            breadcrumbs: ['Territorio', 'Municipios'],
+            permission: 'municipalities.view',
+          },
+        },
+        {
           path: 'mapas/capas',
           name: 'maps.layers',
           component: () => import('@/modules/maps/views/MapLayersView.vue'),
