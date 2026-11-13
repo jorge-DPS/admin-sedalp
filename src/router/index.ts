@@ -33,30 +33,78 @@ const router = createRouter({
         {
           path: 'municipal/poas',
           name: 'municipal.poas.index',
-          component: () => import('@/modules/municipal/views/MunicipalPoasView.vue'),
-          meta: { title: 'POA municipales', breadcrumbs: ['Municipal', 'POA'], permission: 'municipal.poas.view' },
+          redirect: (to) => {
+            const { municipality, ...query } = to.query
+            return typeof municipality === 'string' && /^[1-9]\d*$/.test(municipality)
+              ? {
+                  name: 'territory.poas.index',
+                  params: { municipalityId: municipality },
+                  query,
+                  hash: to.hash,
+                }
+              : { name: 'territory.municipalities.index', query, hash: to.hash }
+          },
         },
         {
           path: 'municipal/municipios/:municipalityId(\\d+)/poas/:poaId(\\d+)',
           name: 'municipal.poas.show',
-          component: () => import('@/modules/municipal/views/MunicipalPoaDetailView.vue'),
-          meta: { title: 'Detalle del POA', breadcrumbs: ['Municipal', 'POA', 'Documentos'], permission: 'municipal.poas.view' },
+          redirect: (to) => ({
+            name: 'territory.poas.show',
+            params: to.params,
+            query: to.query,
+            hash: to.hash,
+          }),
         },
         {
           path: 'territorio/municipios',
           name: 'territory.municipalities.index',
           component: () => import('@/modules/territory/views/TerritoryManagementView.vue'),
           meta: {
-            title: 'Consulta territorial',
+            title: 'Municipios',
             breadcrumbs: ['Territorio', 'Municipios'],
             permission: 'municipalities.view',
           },
         },
         {
+          path: 'territorio/municipios/:municipalityId(\\d+)',
+          component: () => import('@/modules/territory/layouts/MunicipalityWorkspaceLayout.vue'),
+          children: [
+            {
+              path: '',
+              name: 'territory.municipalities.overview',
+              component: () => import('@/modules/territory/components/MunicipalitySummary.vue'),
+              meta: { title: 'Resumen municipal', permission: 'municipalities.view' },
+            },
+            {
+              path: 'poas',
+              name: 'territory.poas.index',
+              component: () => import('@/modules/municipal/views/MunicipalPoasView.vue'),
+              meta: { title: 'POA municipales', permission: 'municipal.poas.view' },
+            },
+            {
+              path: 'poas/:poaId(\\d+)',
+              name: 'territory.poas.show',
+              component: () => import('@/modules/municipal/views/MunicipalPoaDetailView.vue'),
+              meta: { title: 'Detalle del POA', permission: 'municipal.poas.view' },
+            },
+            {
+              path: 'autoridades',
+              name: 'territory.authorities',
+              component: () =>
+                import('@/modules/municipal/components/authorities/MunicipalAuthoritiesWorkspace.vue'),
+              meta: { title: 'Autoridades', permission: 'municipal.authorities.view' },
+            },
+          ],
+        },
+        {
           path: 'mapas/capas',
           name: 'maps.layers',
           component: () => import('@/modules/maps/views/MapLayersView.vue'),
-          meta: { title: 'Gestión de capas', breadcrumbs: ['Cartografía', 'Gestión de capas'], permission: 'maps.view' },
+          meta: {
+            title: 'Gestión de capas',
+            breadcrumbs: ['Cartografía', 'Gestión de capas'],
+            permission: 'maps.view',
+          },
         },
         {
           path: 'mapas',

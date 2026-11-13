@@ -1,10 +1,16 @@
 import { onScopeDispose } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { poasApi } from '../api/poas.api'
+import { poaVersionsApi } from '../api/poaVersions.api'
 import { downloadFilename } from '../utils/municipal.format'
 import { useMunicipalMutation } from './usePoaActions'
 
-export function useDocumentDownload(municipalityId: number, poaId: number, fiscalYear: number) {
+export function useDocumentDownload(
+  municipalityId: number,
+  poaId: number,
+  fiscalYear: number,
+  versionId?: number,
+) {
   const auth = useAuthStore()
   const mutation = useMunicipalMutation()
   const request = new AbortController()
@@ -15,7 +21,10 @@ export function useDocumentDownload(municipalityId: number, poaId: number, fisca
     return mutation.run(async () => {
       if (!auth.hasPermission('municipal.documents.view'))
         throw new Error('No tienes permiso para descargar documentos.')
-      const response = await poasApi.file(municipalityId, poaId, documentId, request.signal)
+      const response =
+        versionId === undefined
+          ? await poasApi.file(municipalityId, poaId, documentId, request.signal)
+          : await poaVersionsApi.file(municipalityId, poaId, versionId, documentId, request.signal)
       if (request.signal.aborted) return false
       if ((await response.data.slice(0, 5).text()) !== '%PDF-')
         throw new Error('El servidor no devolvió un archivo PDF válido.')
@@ -26,7 +35,9 @@ export function useDocumentDownload(municipalityId: number, poaId: number, fisca
       anchor.href = url
       anchor.download = downloadFilename(
         response.headers['content-disposition'],
-        `poa-${fiscalYear}-v${version}.pdf`,
+        versionId === undefined
+          ? `poa-${fiscalYear}-v${version}.pdf`
+          : `poa-${fiscalYear}-v${version}-${documentId}.pdf`,
       )
       document.body.append(anchor)
       anchor.click()

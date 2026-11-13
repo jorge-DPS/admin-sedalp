@@ -4,11 +4,7 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 const route = useRoute()
 const auth = useAuthStore()
-const active = computed(
-  () =>
-    route.name === 'territory.municipalities.index' ||
-    String(route.name).startsWith('municipal.poas.'),
-)
+const active = computed(() => String(route.name).startsWith('territory.'))
 const expanded = ref(active.value)
 watch(
   () => route.name,

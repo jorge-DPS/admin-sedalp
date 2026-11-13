@@ -6,10 +6,18 @@ import type { Municipality } from '../types/territory.types'
 
 const emit = defineEmits<{ municipalityChange: [value: Municipality | null] }>()
 
-withDefaults(defineProps<{ withMunicipality?: boolean; active?: boolean; disabled?: boolean }>(), {
-  withMunicipality: true,
-  active: undefined,
-})
+withDefaults(
+  defineProps<{
+    compact?: boolean
+    withMunicipality?: boolean
+    active?: boolean
+    disabled?: boolean
+  }>(),
+  {
+    withMunicipality: true,
+    active: undefined,
+  },
+)
 const regionId = defineModel<number | null>('regionId', { default: null })
 const provinceId = defineModel<number | null>('provinceId', { default: null })
 const municipalityId = defineModel<number | null>('municipalityId', { default: null })
@@ -18,7 +26,7 @@ const provinceLoading = ref(false)
 </script>
 
 <template>
-  <div class="grid min-w-0 gap-4 sm:grid-cols-2">
+  <div :class="compact ? 'contents' : 'grid min-w-0 gap-4 sm:grid-cols-2'">
     <TerritoryCatalogSelect
       :id="`${id}-region`"
       v-model="regionId"
@@ -33,7 +41,7 @@ const provinceLoading = ref(false)
       @busy="provinceLoading = $event"
       :disabled="disabled"
     />
-    <p class="text-xs leading-5 text-muted-foreground sm:col-span-2">
+    <p v-if="!compact" class="text-xs leading-5 text-muted-foreground sm:col-span-2">
       Las provincias se relacionan con la región a través de sus municipios. Una provincia puede
       incluir municipios de distintas regiones.
     </p>

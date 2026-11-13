@@ -67,10 +67,11 @@ export const poasApi = {
   async upload(
     municipalityId: number,
     poaId: number,
-    payload: UploadPoaDocumentPayload,
+    payload: UploadPoaDocumentPayload & { municipal_poa_version_id: number },
     onUploadProgress: (event: AxiosProgressEvent) => void,
   ) {
     const form = new FormData()
+    form.append('municipal_poa_version_id', String(payload.municipal_poa_version_id))
     form.append('pdf', payload.pdf)
     form.append('title', payload.title.trim())
     for (const field of ['document_reference', 'received_at', 'notes'] as const) {

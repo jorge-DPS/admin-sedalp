@@ -7,10 +7,12 @@ import AppModals from '@/layouts/components/modals/AppModals.vue'
 
 <template>
   <!-- Base general que se reutiliza en todos los módulos internos -->
-  <div class="flex min-h-screen grow">
+  <div class="flex min-h-screen w-full min-w-0 grow">
     <AppHeader />
 
-<div class="flex flex-col lg:flex-row grow pt-(--header-height) lg:pt-0 lg:bg-azul-negro">
+    <div
+      class="flex min-w-0 grow flex-col lg:flex-row pt-(--header-height) lg:pt-0 lg:bg-azul-negro"
+    >
       <AppSidebar />
       <AppMain />
     </div>

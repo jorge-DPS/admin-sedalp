@@ -31,7 +31,7 @@ export async function getMunicipalError(error: unknown): Promise<ApiError> {
   if (result.status === 403)
     result.message = 'No tienes autorización para realizar esta operación municipal.'
   else if (result.status === 404)
-    result.message = 'El municipio, POA o documento solicitado no está disponible.'
+    result.message = 'El municipio, autoridad, POA o documento solicitado no está disponible.'
   else if (result.status === 429)
     result.message = 'Se alcanzó el límite de solicitudes. Espera un momento antes de reintentar.'
   else if (result.status === 413)

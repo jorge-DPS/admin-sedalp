@@ -1,18 +1,23 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import type { MunicipalPoa } from '../types/poa.types'
 import { usePoaActions } from '../composables/usePoaActions'
-import MunicipalDialog from './MunicipalDialog.vue'
+import MunicipalSection from './MunicipalSection.vue'
 import MunicipalFeedback from './MunicipalFeedback.vue'
 
 const props = defineProps<{
   municipalityId: number
   municipalityName: string
   poa?: MunicipalPoa
-  inline?: boolean
   writable: boolean
+  embedded?: boolean
 }>()
-const emit = defineEmits<{ close: []; saved: [poa: MunicipalPoa]; busy: [value: boolean] }>()
+const emit = defineEmits<{
+  close: []
+  saved: [poa: MunicipalPoa]
+  busy: [value: boolean]
+  dirty: [value: boolean]
+}>()
 const { busy, error, create, update } = usePoaActions(props.municipalityId)
 const form = reactive({
   fiscal_year:
@@ -25,6 +30,9 @@ const form = reactive({
   title: props.poa?.title ?? '',
   notes: props.poa?.notes ?? '',
 })
+const initialForm = JSON.stringify(form)
+const dirty = computed(() => JSON.stringify(form) !== initialForm)
+watch(dirty, (value) => emit('dirty', value), { immediate: true, flush: 'sync' })
 watch(busy, (value) => emit('busy', value), { flush: 'sync' })
 async function submit(): Promise<void> {
   if (busy.value || !props.writable) return
@@ -36,11 +44,10 @@ async function submit(): Promise<void> {
 }
 </script>
 <template>
-  <MunicipalDialog
+  <MunicipalSection
     :title="poa ? 'Editar POA municipal' : 'Registrar POA municipal'"
     :busy="busy"
-    :inline="inline"
-    @close="emit('close')"
+    :embedded="embedded"
   >
     <form class="flex flex-col gap-4" @submit.prevent="submit">
       <MunicipalFeedback :error="error" />
@@ -89,5 +96,5 @@ async function submit(): Promise<void> {
         </button>
       </div>
     </form>
-  </MunicipalDialog>
+  </MunicipalSection>
 </template>
