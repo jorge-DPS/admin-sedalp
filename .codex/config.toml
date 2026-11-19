@@ -1,0 +1,21 @@
+[mcp_servers.simred-mempalace]
+command = "C:/Users/GADLP/AppData/Local/SIMRED/MemPalace/venv/Scripts/mempalace-mcp.exe"
+args = ["--palace", "E:/PROJECT-SEDALP/.mempalace/palace"]
+cwd = "E:/PROJECT-SEDALP/.mempalace"
+startup_timeout_sec = 30
+tool_timeout_sec = 90
+enabled_tools = ["mempalace_status", "mempalace_search", "mempalace_list_drawers", "mempalace_get_drawer", "mempalace_add_drawer", "mempalace_checkpoint"]
+
+[mcp_servers.simred-mempalace.env]
+MEMPALACE_CONFIG_DIR = "E:/PROJECT-SEDALP/.mempalace"
+MEMPALACE_PALACE_PATH = "E:/PROJECT-SEDALP/.mempalace/palace"
+MEMPALACE_HOOKS_AUTO_SAVE = "0"
+MEMPALACE_EMBEDDING_DEVICE = "cpu"
+HF_HOME = "C:/Users/GADLP/AppData/Local/SIMRED/MemPalace/modelos"
+HF_HUB_CACHE = "C:/Users/GADLP/AppData/Local/SIMRED/MemPalace/modelos/hub"
+HF_HUB_OFFLINE = "1"
+HF_HUB_DISABLE_TELEMETRY = "1"
+HF_HUB_DISABLE_IMPLICIT_TOKEN = "1"
+ANONYMIZED_TELEMETRY = "false"
+OTEL_SDK_DISABLED = "true"
+PYTHONSAFEPATH = "1"
