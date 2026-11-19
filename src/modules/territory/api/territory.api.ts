@@ -48,4 +48,11 @@ export const territoryApi = {
     })
     return data.data
   },
+
+  async setMunicipalityActive(id: number, active: boolean): Promise<Municipality> {
+    const { data } = await api.patch<DataResponse<Municipality>>(`/admin/municipalities/${id}`, {
+      active,
+    })
+    return data.data
+  },
 }

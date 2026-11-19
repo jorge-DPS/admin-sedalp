@@ -2,10 +2,10 @@
 defineProps<{ title: string; description?: string; headingId?: string }>()
 </script>
 <template>
-  <header class="flex flex-wrap items-start justify-between gap-4">
+  <header class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5">
     <div class="min-w-0">
-      <h2 :id="headingId" class="text-xl font-semibold tracking-tight">{{ title }}</h2>
-      <p v-if="description" class="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+      <h2 :id="headingId" class="break-words text-lg font-semibold tracking-tight">{{ title }}</h2>
+      <p v-if="description" class="mt-1 break-words text-sm text-muted-foreground">
         {{ description }}
       </p>
     </div>

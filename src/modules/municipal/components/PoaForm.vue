@@ -49,37 +49,47 @@ async function submit(): Promise<void> {
     :busy="busy"
     :embedded="embedded"
   >
-    <form class="flex flex-col gap-4" @submit.prevent="submit">
+    <form class="flex flex-col gap-5" @submit.prevent="submit">
       <MunicipalFeedback :error="error" />
       <fieldset :disabled="busy || !writable" class="flex min-w-0 flex-col gap-4">
-        <div>
-          <p class="text-xs text-muted-foreground">Municipio</p>
-          <p class="break-words font-medium">{{ municipalityName }}</p>
+        <div class="grid items-start gap-4 rounded-lg bg-muted/25 p-4 sm:grid-cols-2">
+          <div>
+            <p class="text-sm text-muted-foreground">Municipio</p>
+            <p class="mt-1 break-words font-medium">{{ municipalityName }}</p>
+          </div>
+          <label class="flex flex-col gap-2 text-sm font-medium">
+            Gestión fiscal
+            <input
+              v-model="form.fiscal_year"
+              name="fiscal_year"
+              type="number"
+              min="1900"
+              max="2100"
+              step="1"
+              required
+              class="kt-input text-foreground"
+              :disabled="Boolean(poa)"
+              :aria-invalid="Boolean(error?.errors.fiscal_year)"
+            />
+          </label>
         </div>
         <label class="flex flex-col gap-2 text-sm font-medium"
-          >Gestión
-          <input
-            v-model="form.fiscal_year"
-            type="number"
-            min="1900"
-            max="2100"
-            step="1"
-            required
-            class="kt-input text-foreground"
-            :disabled="Boolean(poa)"
-            :aria-invalid="Boolean(error?.errors.fiscal_year)"
-          />
-        </label>
-        <p v-if="poa" class="text-xs text-muted-foreground">
-          La gestión y el municipio no se pueden modificar.
-        </p>
-        <label class="flex flex-col gap-2 text-sm font-medium"
           >Título (opcional)
-          <input v-model="form.title" class="kt-input text-foreground" maxlength="255" />
+          <input
+            v-model="form.title"
+            name="title"
+            class="kt-input text-foreground"
+            maxlength="255"
+          />
         </label>
         <label class="flex flex-col gap-2 text-sm font-medium"
           >Observaciones (opcional)
-          <textarea v-model="form.notes" class="kt-input min-h-28 py-3 text-foreground" rows="4" />
+          <textarea
+            v-model="form.notes"
+            name="notes"
+            class="kt-input min-h-28 py-3 text-foreground"
+            rows="4"
+          />
         </label>
       </fieldset>
       <div class="flex flex-wrap justify-end gap-2 border-t border-border pt-4">

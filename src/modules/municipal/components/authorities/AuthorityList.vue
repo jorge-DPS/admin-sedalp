@@ -24,7 +24,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   edit: [authority: MunicipalAuthority]
   changed: [authority: MunicipalAuthority]
-  currentChanged: []
   busy: [value: boolean]
 }>()
 const auth = useAuthStore()
@@ -49,6 +48,9 @@ const canUpdate = computed(
 )
 const canPublish = computed(
   () => props.writable && auth.hasPermission('municipal.authorities.publish'),
+)
+const canSetCurrent = computed(
+  () => council.value && props.writable && auth.hasPermission('municipal.authorities.update'),
 )
 const search = ref('')
 const query = ref('')
@@ -107,45 +109,71 @@ const { data, loading, error, reload } = useAuthorities(
   () => props.revision,
 )
 function currentChanged(authority: MunicipalAuthority) {
-  emit('changed', authority)
-  emit('currentChanged')
+  updateRow(authority)
+  if (filters.value.is_current !== undefined && authority.is_current !== filters.value.is_current)
+    void reload()
 }
-function publicationSaved(authority: MunicipalAuthority): void {
+function updateRow(authority: MunicipalAuthority): void {
   if (data.value)
     data.value = {
       ...data.value,
       data: data.value.data.map((item) => (item.id === authority.id ? authority : item)),
     }
   emit('changed', authority)
+}
+function publicationSaved(authority: MunicipalAuthority): void {
+  updateRow(authority)
   if (published.value !== '' && authority.is_published !== (published.value === 'yes'))
     void reload()
 }
 </script>
 <template>
-  <section :class="embedded ? 'min-w-0' : 'kt-card min-w-0 overflow-hidden'" :aria-label="heading">
+  <section
+    :class="
+      embedded ? 'min-w-0 border-t border-border' : 'kt-card min-w-0 overflow-hidden rounded-xl'
+    "
+    :aria-label="heading"
+  >
     <header
-      class="flex flex-wrap items-center justify-between gap-2 border-b border-border px-5 py-4 sm:px-6"
+      v-if="!embedded"
+      class="flex flex-wrap items-center justify-between gap-2 border-b border-border px-3.5 py-2.5"
     >
-      <h3 class="text-base font-semibold">{{ heading }}</h3>
-      <span v-if="data" class="text-xs text-muted-foreground"
-        >{{ data.meta.total }} {{ data.meta.total === 1 ? 'registro' : 'registros' }}</span
-      >
+      <h3 class="text-sm font-semibold">{{ heading }}</h3>
+      <div class="flex flex-wrap items-center gap-3">
+        <span v-if="data" class="text-xs text-muted-foreground">
+          {{ data.meta.total }} {{ data.meta.total === 1 ? 'registro' : 'registros' }}
+        </span>
+        <slot name="actions" />
+      </div>
     </header>
     <div
-      class="grid gap-3 border-b border-border p-5 sm:px-6"
-      :class="scope === 'current' ? '' : 'sm:grid-cols-[minmax(0,1fr)_12rem]'"
+      class="grid gap-2.5 border-b border-border bg-muted/20 px-3.5 py-2.5"
+      :class="
+        scope === 'all' && !excludeCurrent
+          ? 'sm:grid-cols-3'
+          : scope !== 'current'
+            ? 'sm:grid-cols-2'
+            : undefined
+      "
     >
-      <label class="flex flex-col gap-2 text-xs font-medium"
+      <label class="flex min-w-0 flex-col gap-1 text-xs font-medium"
         >{{ council ? 'Buscar concejal' : 'Buscar alcalde'
         }}<input
           v-model="search"
+          :disabled="disabled"
+          name="authority-search"
           type="search"
           maxlength="150"
           placeholder="Nombre completo"
-          class="kt-input w-full text-foreground"
+          class="kt-input kt-input-sm w-full text-foreground"
       /></label>
-      <label v-if="scope !== 'current'" class="flex flex-col gap-2 text-xs font-medium"
-        >Publicación<select v-model="published" class="kt-select w-full text-foreground">
+      <label v-if="scope !== 'current'" class="flex min-w-0 flex-col gap-1 text-xs font-medium"
+        >Publicación<select
+          v-model="published"
+          name="authority-publication"
+          :disabled="disabled"
+          class="kt-select kt-select-sm w-full text-foreground"
+        >
           <option value="">Todos los estados</option>
           <option value="yes">Publicados</option>
           <option value="no">No publicados</option>
@@ -153,8 +181,13 @@ function publicationSaved(authority: MunicipalAuthority): void {
       >
       <label
         v-if="scope === 'all' && !excludeCurrent"
-        class="flex flex-col gap-2 text-xs font-medium"
-        >Vigencia<select v-model="current" class="kt-select w-full text-foreground">
+        class="flex min-w-0 flex-col gap-1 text-xs font-medium"
+        >Vigencia<select
+          v-model="current"
+          name="authority-current"
+          :disabled="disabled"
+          class="kt-select kt-select-sm w-full text-foreground"
+        >
           <option value="">Todos los registros</option>
           <option value="yes">Vigentes</option>
           <option value="no">No vigentes</option>
@@ -163,25 +196,18 @@ function publicationSaved(authority: MunicipalAuthority): void {
     </div>
     <MunicipalFeedback :error="error" retry class="m-5" @retry="reload" />
     <div :aria-busy="loading">
-      <p v-if="loading" role="status" class="p-6 text-sm text-muted-foreground">
+      <p v-if="loading" role="status" class="px-3.5 py-4 text-sm text-muted-foreground">
         Cargando autoridades…
       </p>
       <template v-else-if="data && !error">
-        <div v-if="!data.data.length" class="p-6 text-sm text-muted-foreground">
+        <div v-if="!data.data.length" class="px-3.5 py-4 text-sm text-muted-foreground">
           <p class="font-medium text-foreground">
             {{
-              search || published
+              search || published || current
                 ? 'No hay coincidencias'
                 : scope === 'current'
                   ? 'No hay concejales vigentes registrados'
                   : 'No hay autoridades para esta consulta'
-            }}
-          </p>
-          <p class="mt-2 leading-relaxed">
-            {{
-              scope === 'current'
-                ? 'Los demás registros están disponibles en el historial, donde puedes editar su vigencia.'
-                : 'Puedes registrar una autoridad o ajustar los filtros de la gestión.'
             }}
           </p>
         </div>
@@ -189,14 +215,15 @@ function publicationSaved(authority: MunicipalAuthority): void {
           <li
             v-for="authority in data.data"
             :key="authority.id"
-            class="flex min-w-0 flex-wrap items-center justify-between gap-x-5 gap-y-3 px-5 py-3.5 sm:px-6"
+            class="flex min-w-0 flex-col justify-between gap-x-3 gap-y-1.5 px-3.5 py-2.5 sm:flex-row sm:items-center"
             :aria-label="(council ? 'Concejal: ' : 'Alcalde: ') + authority.full_name"
             data-authority-row
           >
-            <div class="min-w-0 flex-1 basis-40">
+            <div class="min-w-0 sm:flex-1">
               <div class="flex flex-wrap items-center gap-2">
                 <h4 class="break-words text-sm font-medium">{{ authority.full_name }}</h4>
                 <span
+                  v-if="!council"
                   class="kt-badge kt-badge-outline"
                   :class="authority.is_current ? 'kt-badge-primary' : 'kt-badge-secondary'"
                   >{{ authority.is_current ? 'Vigente' : 'No vigente' }}</span
@@ -209,20 +236,10 @@ function publicationSaved(authority: MunicipalAuthority): void {
                 {{ authority.position_title || 'Alcalde o alcaldesa municipal' }} ·
                 {{ municipalDate(authority.term_start) }} — {{ municipalDate(authority.term_end) }}
               </p>
-              <p v-if="!canPublish" class="mt-1 text-xs text-muted-foreground">
-                {{ authority.is_published ? 'Publicado' : 'No publicado' }}
-              </p>
             </div>
-            <div v-if="canUpdate || canPublish" class="flex flex-wrap items-center gap-3">
-              <AuthorityIconButton
-                v-if="canUpdate"
-                :label="(council ? 'Editar nombre de ' : 'Editar ') + authority.full_name"
-                icon="ki-pencil"
-                :disabled="disabled"
-                @click="emit('edit', authority)"
-              />
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
               <AuthorityStateSwitch
-                v-if="council && writable && auth.hasPermission('municipal.authorities.update')"
+                v-if="canSetCurrent"
                 council-current
                 :municipality-id="municipalityId"
                 :authority="authority"
@@ -231,6 +248,9 @@ function publicationSaved(authority: MunicipalAuthority): void {
                 @busy="emit('busy', $event)"
                 @changed="currentChanged"
               />
+              <span v-else-if="council" class="text-xs text-muted-foreground">
+                {{ authority.is_current ? 'Vigente' : 'No vigente' }}
+              </span>
               <AuthorityStateSwitch
                 v-if="canPublish"
                 :municipality-id="municipalityId"
@@ -240,18 +260,27 @@ function publicationSaved(authority: MunicipalAuthority): void {
                 @busy="emit('busy', $event)"
                 @changed="publicationSaved"
               />
+              <span v-else class="text-xs text-muted-foreground">
+                {{ authority.is_published ? 'Publicado' : 'No publicado' }}
+              </span>
+              <AuthorityIconButton
+                v-if="canUpdate"
+                :label="(council ? 'Editar nombre de ' : 'Editar ') + authority.full_name"
+                icon="ki-pencil"
+                :disabled="disabled"
+                @click="emit('edit', authority)"
+              />
             </div>
           </li>
         </ul>
         <TerritoryPagination
           :meta="data.meta"
-          :loading="loading"
-          class="border-t border-border px-5 py-4 text-xs sm:px-6"
+          :loading="loading || disabled"
+          class="border-t border-border px-3.5 py-2.5 text-xs"
           :label="'Paginación de ' + heading.toLowerCase()"
           @page="page = $event"
         />
       </template>
     </div>
-    <slot />
   </section>
 </template>

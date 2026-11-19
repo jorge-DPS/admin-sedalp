@@ -61,15 +61,16 @@ async function submit(): Promise<void> {
   <MunicipalSection title="Adjuntar PDF a la versión" :busy="busy" :embedded="embedded">
     <form class="flex flex-col gap-4" @submit.prevent="submit">
       <p class="text-sm text-muted-foreground">
-        POA {{ fiscalYear }} · Versión {{ versionNumber }}. Puedes adjuntar varios PDF al mismo
-        borrador. Se publicarán juntos al publicar la versión completa.
+        Puedes adjuntar varios PDF al mismo borrador. Se publicarán juntos con la versión.
       </p>
       <MunicipalFeedback :error="error" />
       <fieldset :disabled="busy || !writable || !!session" class="flex min-w-0 flex-col gap-4">
-        <label class="flex flex-col gap-2 text-sm font-medium"
+        <label
+          class="flex flex-col gap-2 rounded-lg border border-dashed border-border bg-muted/25 p-4 text-sm font-medium"
           >Documento PDF
           <input
             ref="input"
+            name="pdf"
             type="file"
             accept=".pdf,application/pdf"
             :required="!file"
@@ -96,7 +97,13 @@ async function submit(): Promise<void> {
         </p>
         <label class="flex flex-col gap-2 text-sm font-medium"
           >Título del documento
-          <input v-model="form.title" class="kt-input text-foreground" maxlength="255" required />
+          <input
+            v-model="form.title"
+            name="title"
+            class="kt-input text-foreground"
+            maxlength="255"
+            required
+          />
         </label>
         <label class="flex flex-col gap-2 text-sm font-medium"
           >Referencia documental (opcional)

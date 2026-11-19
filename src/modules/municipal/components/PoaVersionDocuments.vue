@@ -9,7 +9,7 @@ import { fileSize, municipalDate } from '../utils/municipal.format'
 import type { MunicipalPoaVersion, PoaVersionDocument } from '../types/poa.types'
 import TerritoryPagination from '@/modules/territory/components/TerritoryPagination.vue'
 import MunicipalFeedback from './MunicipalFeedback.vue'
-import MunicipalSidePanel from './MunicipalSidePanel.vue'
+import MunicipalFormDialog from './MunicipalFormDialog.vue'
 import PoaUploadForm from './PoaUploadForm.vue'
 import PoaDocumentDetail from './PoaDocumentDetail.vue'
 const props = defineProps<{
@@ -33,8 +33,7 @@ const uploadOpen = ref(false),
   uploadBusy = ref(false),
   uploadDirty = ref(false)
 const selectedDocument = ref<number | null>(null)
-const uploadPanel = ref<InstanceType<typeof MunicipalSidePanel>>()
-const documentPanel = ref<InstanceType<typeof MunicipalSidePanel>>()
+const uploadPanel = ref<InstanceType<typeof MunicipalFormDialog>>()
 const uploadForm = ref<InstanceType<typeof PoaUploadForm>>()
 const publication = usePoaVersionActions(props.municipalityId, props.poaId, () => props.writable)
 const busy = computed(() => publication.busy.value || uploadBusy.value)
@@ -80,6 +79,11 @@ const {
   download,
 } = useDocumentDownload(props.municipalityId, props.poaId, props.fiscalYear, props.version.id)
 const notice = ref('')
+const confirmPublication = ref(false)
+function openUpload() {
+  confirmPublication.value = false
+  uploadOpen.value = true
+}
 async function closeUpload() {
   if (uploadBusy.value || !(await uploadForm.value?.discard())) return
   uploadOpen.value = false
@@ -101,6 +105,7 @@ async function publish() {
   if (!canPublish.value || busy.value || props.disabled) return
   const saved = await publication.publish(props.version.id)
   if (saved) {
+    confirmPublication.value = false
     notice.value =
       'Versión ' +
       saved.version_number +
@@ -111,19 +116,19 @@ async function publish() {
 </script>
 <template>
   <section
-    class="kt-card min-w-0 overflow-hidden"
+    class="kt-card min-w-0 overflow-hidden rounded-xl"
     aria-label="Documentos de la versión seleccionada"
   >
     <header
-      class="flex flex-wrap items-start justify-between gap-4 border-b border-border p-5 sm:p-6"
+      class="flex flex-wrap items-start justify-between gap-3 border-b border-border p-3.5 sm:px-4"
     >
       <div class="min-w-0">
-        <h3 class="text-lg font-semibold">Documentos de la versión {{ version.version_number }}</h3>
-        <p class="mt-1 text-sm text-muted-foreground">
+        <h3 class="text-base font-semibold">PDF de la versión {{ version.version_number }}</h3>
+        <p class="mt-0.5 text-xs text-muted-foreground">
           {{ version.document_type === 'initial' ? 'Documento inicial' : 'Reformulación' }} · POA
           {{ fiscalYear }}
         </p>
-        <div class="mt-3 flex flex-wrap gap-2">
+        <div class="mt-2 flex flex-wrap gap-1.5">
           <span
             class="kt-badge kt-badge-outline"
             :class="version.is_published ? 'kt-badge-success' : 'kt-badge-secondary'"
@@ -143,22 +148,19 @@ async function publish() {
       </div>
       <button
         v-if="canUpload"
-        class="kt-btn kt-btn-primary"
+        class="kt-btn kt-btn-sm kt-btn-primary"
         type="button"
         :disabled="busy || disabled"
-        @click="uploadOpen = true"
+        @click="openUpload"
       >
         <i class="ki-filled ki-file-up" aria-hidden="true" />Subir PDF
       </button>
     </header>
     <div
-      class="border-b border-border px-5 py-4 text-sm leading-relaxed text-muted-foreground sm:px-6"
+      v-if="version.published_at"
+      class="border-b border-border bg-muted/20 px-3.5 py-2.5 text-xs leading-relaxed text-muted-foreground sm:px-4"
     >
-      {{
-        version.published_at
-          ? 'El contenido de esta versión está cerrado. Para incorporar otros archivos, crea una nueva versión.'
-          : 'La publicación incluirá todos los PDF de esta versión. Añade y revisa los archivos antes de publicar.'
-      }}
+      Versión cerrada. Crea una nueva versión para adjuntar otros archivos.
     </div>
     <MunicipalFeedback :error="error" retry class="m-5" @retry="reload" /><MunicipalFeedback
       :error="downloadError"
@@ -177,7 +179,7 @@ async function publish() {
         role="region"
         aria-label="Archivos PDF de la versión"
       >
-        <table class="kt-table min-w-[40rem] align-middle">
+        <table class="kt-table w-full table-fixed align-middle">
           <caption class="sr-only">
             Documentos PDF de la versión
             {{
@@ -187,9 +189,9 @@ async function publish() {
           <thead>
             <tr>
               <th scope="col">Documento</th>
-              <th scope="col">Recepción</th>
-              <th scope="col">Tamaño</th>
-              <th scope="col" class="text-right">Acciones</th>
+              <th scope="col" class="hidden w-28 md:table-cell">Recepción</th>
+              <th scope="col" class="hidden w-24 lg:table-cell">Tamaño</th>
+              <th scope="col" class="w-24 text-right">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -200,18 +202,26 @@ async function publish() {
             </tr>
             <template v-else-if="!error"
               ><tr v-for="document in documents?.data" :key="document.id">
-                <td class="min-w-56 max-w-96 whitespace-normal break-words">
+                <td class="whitespace-normal break-words">
                   <p class="font-medium">{{ document.title }}</p>
                   <p class="mt-1 text-xs text-muted-foreground">
                     {{ document.original_filename || 'Nombre no informado' }}
                   </p>
+                  <p class="mt-1 text-xs text-muted-foreground lg:hidden">
+                    <span class="md:hidden">{{ municipalDate(document.received_at) }} · </span
+                    >{{ fileSize(document.file_size_bytes) }}
+                  </p>
                 </td>
-                <td>{{ municipalDate(document.received_at) }}</td>
-                <td>{{ fileSize(document.file_size_bytes) }}</td>
+                <td class="hidden tabular-nums md:table-cell">
+                  {{ municipalDate(document.received_at) }}
+                </td>
+                <td class="hidden whitespace-normal tabular-nums lg:table-cell">
+                  {{ fileSize(document.file_size_bytes) }}
+                </td>
                 <td>
                   <div class="flex justify-end gap-1">
                     <button
-                      class="kt-btn kt-btn-icon kt-btn-ghost text-muted-foreground"
+                      class="kt-btn kt-btn-sm kt-btn-icon kt-btn-ghost text-muted-foreground"
                       type="button"
                       :aria-label="'Detalle de ' + document.title"
                       :title="'Detalle de ' + document.title"
@@ -220,7 +230,7 @@ async function publish() {
                     >
                       <i class="ki-filled ki-eye" aria-hidden="true" /></button
                     ><button
-                      class="kt-btn kt-btn-icon kt-btn-ghost text-muted-foreground"
+                      class="kt-btn kt-btn-sm kt-btn-icon kt-btn-ghost text-muted-foreground"
                       type="button"
                       :aria-label="'Descargar ' + document.title"
                       :title="'Descargar ' + document.title"
@@ -233,7 +243,7 @@ async function publish() {
                 </td>
               </tr>
               <tr v-if="!documents?.data.length">
-                <td colspan="4" class="px-5 py-10 text-center">
+                <td colspan="4" class="px-4 py-6 text-center">
                   <p class="text-sm font-medium">Esta versión todavía no tiene documentos</p>
                   <p class="mt-2 text-sm text-muted-foreground">
                     {{
@@ -252,62 +262,83 @@ async function publish() {
         :meta="documents?.meta ?? null"
         :loading="loading"
         label="Paginación de documentos de la versión"
-        class="border-t border-border px-5 py-4"
+        class="border-t border-border px-4 py-2.5"
         @page="page = $event"
     /></template>
     <footer
       v-if="canPublish"
-      class="flex flex-wrap items-center justify-between gap-4 border-t border-border p-5 sm:px-6"
+      class="flex flex-wrap items-center justify-between gap-2.5 border-t border-border bg-muted/20 p-3.5 sm:px-4"
     >
       <p class="max-w-lg text-xs leading-relaxed text-muted-foreground">
-        Se publicará la versión completa y será la vigente. Las publicaciones anteriores se
-        conservan.
+        {{
+          confirmPublication
+            ? 'La versión completa quedará publicada y vigente. Los PDF publicados se conservan.'
+            : 'Revisa todos los PDF antes de publicar esta versión.'
+        }}
       </p>
       <button
+        v-if="!confirmPublication"
         type="button"
-        class="kt-btn kt-btn-primary"
+        class="kt-btn kt-btn-sm kt-btn-outline"
         :disabled="busy || disabled || uploadDirty || version.documents_count === 0"
-        @click="publish"
+        @click="confirmPublication = true"
       >
-        {{ publication.busy.value ? 'Publicando…' : 'Publicar versión completa' }}
+        Publicar versión
       </button>
+      <div v-else class="flex flex-wrap gap-2">
+        <button
+          type="button"
+          class="kt-btn kt-btn-sm kt-btn-ghost"
+          :disabled="busy"
+          @click="confirmPublication = false"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="kt-btn kt-btn-sm kt-btn-primary"
+          :disabled="busy || disabled"
+          @click="publish"
+        >
+          {{ publication.busy.value ? 'Publicando…' : 'Confirmar publicación' }}
+        </button>
+      </div>
     </footer>
-    <MunicipalSidePanel
-      v-if="uploadOpen"
-      ref="uploadPanel"
-      title="Adjuntar PDF"
-      :description="'POA ' + fiscalYear + ' · Versión ' + version.version_number"
-      :busy="uploadBusy"
-      :dirty="uploadDirty"
-      @close="closeUpload"
-      ><PoaUploadForm
-        ref="uploadForm"
-        embedded
-        :municipality-id="municipalityId"
-        :poa-id="poaId"
-        :version-id="version.id"
-        :version-number="version.version_number"
-        :fiscal-year="fiscalYear"
-        :writable="canUpload"
-        @busy="uploadBusy = $event"
-        @dirty="uploadDirty = $event"
-        @saved="uploaded"
-        @close="uploadPanel?.requestClose()"
-    /></MunicipalSidePanel>
-    <MunicipalSidePanel
-      v-if="selectedDocument"
-      ref="documentPanel"
-      title="Detalle del documento PDF"
-      :description="'POA ' + fiscalYear + ' · Versión ' + version.version_number"
-      @close="selectedDocument = null"
-      ><PoaDocumentDetail
-        embedded
-        :municipality-id="municipalityId"
-        :poa-id="poaId"
-        :version="version"
-        :document-id="selectedDocument"
-        :fiscal-year="fiscalYear"
-        @close="documentPanel?.requestClose()"
-    /></MunicipalSidePanel>
   </section>
+  <MunicipalFormDialog
+    v-if="uploadOpen"
+    ref="uploadPanel"
+    title="Adjuntar PDF"
+    :description="'POA ' + fiscalYear + ' · Versión ' + version.version_number"
+    :busy="uploadBusy"
+    :dirty="uploadDirty"
+    @close="closeUpload"
+    ><PoaUploadForm
+      ref="uploadForm"
+      embedded
+      :municipality-id="municipalityId"
+      :poa-id="poaId"
+      :version-id="version.id"
+      :version-number="version.version_number"
+      :fiscal-year="fiscalYear"
+      :writable="canUpload"
+      @busy="uploadBusy = $event"
+      @dirty="uploadDirty = $event"
+      @saved="uploaded"
+      @close="uploadPanel?.requestClose()"
+  /></MunicipalFormDialog>
+  <MunicipalFormDialog
+    v-if="selectedDocument"
+    title="Detalle del documento PDF"
+    :description="'POA ' + fiscalYear + ' · Versión ' + version.version_number"
+    @close="selectedDocument = null"
+    ><PoaDocumentDetail
+      embedded
+      :municipality-id="municipalityId"
+      :poa-id="poaId"
+      :version="version"
+      :document-id="selectedDocument"
+      :fiscal-year="fiscalYear"
+      @close="selectedDocument = null"
+  /></MunicipalFormDialog>
 </template>

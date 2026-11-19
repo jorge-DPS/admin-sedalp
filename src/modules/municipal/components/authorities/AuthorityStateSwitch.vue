@@ -67,7 +67,7 @@ async function toggle(event: Event): Promise<void> {
 </script>
 <template>
   <div class="flex min-w-0 flex-col gap-2" data-publication-control>
-    <div class="flex min-h-9 items-center gap-2">
+    <div class="flex min-h-8 items-center gap-1.5">
       <div v-if="showLabel" class="text-right">
         <p class="text-xs text-muted-foreground">Visibilidad en el portal</p>
         <p class="mt-0.5 text-sm font-medium" aria-live="polite">
@@ -79,7 +79,7 @@ async function toggle(event: Event): Promise<void> {
           :id="id"
           ref="control"
           type="checkbox"
-          class="kt-switch"
+          class="kt-switch kt-switch-sm"
           role="switch"
           :checked="published"
           :disabled="busy || disabled"
@@ -92,21 +92,10 @@ async function toggle(event: Event): Promise<void> {
           "
           @change="toggle"
         />
-        <label class="kt-label text-xs" :for="id"
+        <label :class="showLabel ? 'sr-only' : 'kt-label text-xs'" :for="id"
           >{{ label }}<span class="sr-only"> de {{ authority.full_name }}</span></label
         >
       </template>
-      <span
-        v-else
-        class="flex size-10 shrink-0 items-center justify-center rounded-xl"
-        :class="
-          published
-            ? 'bg-green-500/10 text-green-600 dark:text-green-400'
-            : 'bg-muted text-muted-foreground'
-        "
-        :title="published ? 'Publicado en el portal' : 'No publicado'"
-        ><i class="ki-filled ki-check-circle text-xl" aria-hidden="true"
-      /></span>
     </div>
     <span v-if="notice" role="status" class="text-xs text-muted-foreground">{{ notice }}</span>
     <MunicipalFeedback :error="error" />

@@ -19,14 +19,17 @@ const { url, loading, error, reload } = useAuthorityPhoto(
       v-if="url"
       :src="url"
       :alt="'Fotografía institucional de ' + authority.full_name"
+      width="160"
+      height="160"
       class="aspect-square w-full rounded-xl border border-border object-cover"
     />
     <div
       v-else
-      class="flex aspect-square items-center justify-center rounded-xl border border-border bg-muted/40 p-4 text-center text-sm text-muted-foreground"
+      class="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border border-border bg-muted/40 p-1 text-center text-[0.65rem] leading-tight text-muted-foreground"
       role="status"
     >
-      {{ loading ? 'Cargando fotografía…' : 'Fotografía no disponible' }}
+      <i class="ki-filled ki-user text-xl" aria-hidden="true" />
+      {{ loading ? 'Cargando foto…' : 'Sin fotografía' }}
     </div>
     <MunicipalFeedback :error="error" retry @retry="reload" />
   </div>

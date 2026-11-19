@@ -56,12 +56,11 @@ const {
 )
 watch(versions, (result) => {
   if (!result) return
-  if (!selected.value)
-    selected.value = result.data.find((version) => version.is_current) ?? result.data[0] ?? null
-  else {
-    const fresh = result.data.find((version) => version.id === selected.value!.id)
-    if (fresh) selected.value = fresh
-  }
+  selected.value =
+    result.data.find((version) => version.id === selected.value?.id) ??
+    result.data.find((version) => version.is_current) ??
+    result.data[0] ??
+    null
 })
 const canCreate = computed(() => props.writable && auth.hasPermission('municipal.documents.upload'))
 const notice = ref('')
@@ -100,15 +99,13 @@ function publishedVersion(version: MunicipalPoaVersion) {
 }
 </script>
 <template>
-  <section class="flex min-w-0 flex-col gap-5" aria-label="Versiones del POA">
-    <MunicipalPageHeader
-      title="Versiones del POA"
-      description="Cada versión reúne sus documentos iniciales o de reformulación."
+  <section class="flex min-w-0 flex-col gap-3" aria-label="Versiones del POA">
+    <MunicipalPageHeader title="Versiones del POA"
       ><template #actions
         ><button
           v-if="canCreate"
           type="button"
-          class="kt-btn kt-btn-primary"
+          class="kt-btn kt-btn-sm kt-btn-outline"
           :disabled="busy || documentsDirty"
           @click="create"
         >
@@ -118,77 +115,88 @@ function publishedVersion(version: MunicipalPoaVersion) {
         </button></template
       ></MunicipalPageHeader
     >
-    <MunicipalFeedback :error="action.error.value" /><MunicipalFeedback
-      :error="error"
-      retry
-      @retry="reload"
-    />
+    <MunicipalFeedback :error="action.error.value" />
     <p
       v-if="notice"
       role="status"
-      class="rounded-lg border border-primary/25 bg-primary/5 p-4 text-sm"
+      class="rounded-lg border border-primary/25 bg-primary/5 px-3.5 py-2.5 text-sm"
     >
       {{ notice }}
     </p>
     <p v-if="!permitted" role="status" class="text-sm text-muted-foreground">
       No tienes permiso para consultar el historial de versiones.
     </p>
-    <div v-if="permitted" class="grid gap-3 sm:grid-cols-3">
-      <label class="flex flex-col gap-2 text-xs font-medium"
-        >Tipo de versión<select
-          v-model="type"
-          class="kt-select w-full text-foreground"
-          :disabled="busy || documentsDirty"
-        >
-          <option value="">Todos los tipos</option>
-          <option value="initial">Inicial</option>
-          <option value="reformulated">Reformulación</option>
-        </select></label
-      ><label class="flex flex-col gap-2 text-xs font-medium"
-        >Vigencia<select
-          v-model="current"
-          class="kt-select w-full text-foreground"
-          :disabled="busy || documentsDirty"
-        >
-          <option value="">Todas las versiones</option>
-          <option value="yes">Vigente</option>
-          <option value="no">No vigentes</option>
-        </select></label
-      ><label class="flex flex-col gap-2 text-xs font-medium"
-        >Publicación<select
-          v-model="published"
-          class="kt-select w-full text-foreground"
-          :disabled="busy || documentsDirty"
-        >
-          <option value="">Todos los estados</option>
-          <option value="yes">Publicadas</option>
-          <option value="no">No publicadas</option>
-        </select></label
-      >
-    </div>
-    <div class="grid min-w-0 items-start gap-5 xl:grid-cols-[15rem_minmax(0,1fr)]">
+    <div
+      class="grid min-w-0 items-start gap-3.5"
+      :class="selected ? 'lg:grid-cols-[minmax(13rem,15rem)_minmax(0,1fr)]' : 'max-w-md'"
+    >
       <section
         v-if="permitted"
-        class="kt-card min-w-0 overflow-hidden"
+        class="kt-card min-w-0 overflow-hidden rounded-xl"
         aria-label="Historial de versiones"
       >
-        <header class="border-b border-border px-5 py-4">
+        <header class="border-b border-border px-3.5 py-3">
           <h3 class="text-sm font-semibold">Historial de versiones</h3>
         </header>
-        <p v-if="loading" role="status" class="p-5 text-sm text-muted-foreground">
+        <details class="border-b border-border bg-muted/15">
+          <summary
+            class="cursor-pointer px-3.5 py-2.5 text-xs font-medium text-foreground focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-ring"
+          >
+            Filtrar historial<span
+              v-if="type || current || published"
+              class="ms-1 text-muted-foreground"
+              >· activos</span
+            >
+          </summary>
+          <div class="grid gap-2.5 px-3.5 pb-3.5 sm:max-lg:grid-cols-3">
+            <label class="flex min-w-0 flex-col gap-1 text-xs font-medium"
+              >Tipo de versión<select
+                v-model="type"
+                class="kt-select kt-select-sm w-full text-foreground"
+                :disabled="busy || documentsDirty"
+              >
+                <option value="">Todos los tipos</option>
+                <option value="initial">Inicial</option>
+                <option value="reformulated">Reformulación</option>
+              </select></label
+            ><label class="flex min-w-0 flex-col gap-1 text-xs font-medium"
+              >Vigencia<select
+                v-model="current"
+                class="kt-select kt-select-sm w-full text-foreground"
+                :disabled="busy || documentsDirty"
+              >
+                <option value="">Todas las versiones</option>
+                <option value="yes">Vigente</option>
+                <option value="no">No vigentes</option>
+              </select></label
+            ><label class="flex min-w-0 flex-col gap-1 text-xs font-medium"
+              >Publicación<select
+                v-model="published"
+                class="kt-select kt-select-sm w-full text-foreground"
+                :disabled="busy || documentsDirty"
+              >
+                <option value="">Todos los estados</option>
+                <option value="yes">Publicadas</option>
+                <option value="no">No publicadas</option>
+              </select></label
+            >
+          </div>
+        </details>
+        <MunicipalFeedback :error="error" retry class="m-4" @retry="reload" />
+        <p v-if="loading" role="status" class="p-3.5 text-sm text-muted-foreground">
           Consultando versiones…
         </p>
-        <ul v-else-if="!error" class="divide-y divide-border">
+        <ul v-else-if="!error" class="max-h-64 divide-y divide-border overflow-y-auto lg:max-h-96">
           <li v-for="version in versions?.data" :key="version.id">
             <button
               type="button"
-              class="flex w-full flex-col items-start gap-2 p-4 text-left text-foreground transition-colors hover:bg-muted/40 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-ring aria-pressed:bg-primary/10"
+              class="flex w-full flex-col items-start gap-1.5 border-s-2 border-transparent px-3 py-2.5 text-left text-foreground hover:bg-muted/40 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-ring aria-pressed:border-primary aria-pressed:bg-primary/5"
               :aria-pressed="selected?.id === version.id"
               :disabled="busy || documentsDirty"
               :aria-label="'Seleccionar versión ' + version.version_number"
               @click="select(version)"
             >
-              <span class="font-semibold"
+              <span class="text-sm font-semibold"
                 >Versión {{ version.version_number }}
                 <span class="ms-2 text-xs font-normal text-muted-foreground">{{
                   version.document_type === 'initial' ? 'Inicial' : 'Reformulación'
@@ -215,7 +223,7 @@ function publishedVersion(version: MunicipalPoaVersion) {
           :meta="versions?.meta ?? null"
           :loading="loading || busy || documentsDirty"
           label="Paginación de versiones del POA"
-          class="border-t border-border p-4 text-xs"
+          class="border-t border-border p-3 text-xs"
           @page="page = $event"
         />
       </section>
@@ -233,16 +241,6 @@ function publishedVersion(version: MunicipalPoaVersion) {
         @uploaded="uploaded"
         @published="publishedVersion"
       />
-      <p
-        v-else-if="!loading && !error && permitted"
-        class="rounded-lg border border-border p-8 text-sm leading-relaxed text-muted-foreground"
-      >
-        {{
-          canCreate
-            ? 'Crea la primera versión del POA para incorporar sus archivos PDF.'
-            : 'Este POA todavía no tiene una versión disponible.'
-        }}
-      </p>
     </div>
   </section>
 </template>

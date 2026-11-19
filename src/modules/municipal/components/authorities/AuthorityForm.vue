@@ -207,6 +207,7 @@ async function submit(): Promise<void> {
     <label class="flex flex-col gap-2 text-sm font-medium"
       >Gestión municipal<select
         v-model="form.municipal_term_id"
+        name="municipal_term_id"
         class="kt-select w-full text-foreground"
         :required="!record"
         :disabled="busy || !writable || !canWriteFields"
@@ -235,6 +236,7 @@ async function submit(): Promise<void> {
         >Nombre completo
         <input
           v-model="form.full_name"
+          name="full_name"
           required
           maxlength="200"
           autocomplete="name"
@@ -396,8 +398,7 @@ async function submit(): Promise<void> {
           >{{ error.errors.notes.join(' ') }}</span
         >
         <p class="text-xs text-muted-foreground">
-          La publicación controla la visibilidad en el portal y se cambia desde su switch de
-          publicación. Es independiente de la vigencia.
+          Cambia la visibilidad en el portal desde la ficha de la autoridad.
         </p>
       </template>
     </fieldset>
